@@ -1,0 +1,5 @@
+"""Explanation"""
+HEART = "\U0001f499"
+THUMBS_UP = "\U0001f44d"
+THUMBS_DOWN = "\U0001f44e"
+PING_PONG = "\U0001f3d3"
