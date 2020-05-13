@@ -1,6 +1,3 @@
-.. image:: https://discordapp.com/api/guilds/655390550698098700/embed.png
-   :align: right
-   :target: https://discord.gg/NGZ6RKB
 ========================
 DragonQuest 9 Grotto Bot
 ========================
