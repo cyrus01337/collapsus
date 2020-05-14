@@ -1,1 +1,2 @@
-py -3 ../../bot.py
+CD ../..
+py -3 bot.py
