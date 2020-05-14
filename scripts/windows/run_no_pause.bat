@@ -1,3 +1,2 @@
-py -3 ../bot.py
-ECHO.
+py -3 ../../bot.py
 PAUSE
