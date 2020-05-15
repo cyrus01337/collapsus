@@ -21,12 +21,12 @@ class ErrorHandlerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error, *args, **kwargs):
+        error = getattr(error, "original", error)
+
         if isinstance(error, self.ignored):
             return print(type(error).__name__)
-        elif isinstance(error, commands.BadArgument):
-            await ctx.send(error)
-            raise error
         else:
+            await ctx.send(error)
             raise error
 
 
