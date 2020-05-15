@@ -17,7 +17,7 @@ class OwnerCog(commands.Cog, name="Owner Only",
     def __init__(self, bot):
         self.bot = bot
         self.hidden = True
-        self.cog_names = self.get_cog_filenames()
+        self.cog_names = self.bot.get_cog_filenames()
 
     def convert(self, codeblock: str):
         for sub in ["```py\n", "\n```"]:
@@ -30,7 +30,7 @@ class OwnerCog(commands.Cog, name="Owner Only",
     def resolve_cog(self, name: str):
         name = name.lower()
 
-        for cog in self.cogs:
+        for cog in self.cog_names:
             if cog.startswith(name):
                 return cog
         return None
