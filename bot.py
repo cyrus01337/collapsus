@@ -32,31 +32,39 @@ class GrottoBot(commands.Bot):
         # wow this looks like json
         self.reminders = {
             "todo": {
-                "run": [
+                "run": (
                     "add editable prefix settings"
-                ],
+                ),
             },
             "idea": {
-                "custom": [
+                "custom": (
                     "create custom.py and create own Embed class",
                     ("re-design self.reminders into it's own object "
-                     "(place into owner.py upon completion)")
-                ],
-                "owner": [
+                     "(place into owner.py upon completion)"),
+                ),
+                "owner": (
                     ("create owner-specific cog for live eval/exec "
                      "functionality"),
                     ("setup reminders to be dynamic instead of a static "
                      "variable sitting in a file"),
-                    "owner-only reminders command :^)"
-                ],
-                "utils": [
+                    "owner-only reminders command :^)",
+                ),
+                "utils": (
                     ("store token settings when encrypting, retrieve token "
-                     "settings as decrypting catalyst ")
-                ],
-                "settings": [
+                     "settings as decrypting catalyst "),
+                ),
+                "settings": (
                     ("have to leave your configuration files locked up "
-                     "somewhere")
-                ],
+                     "somewhere"),
+                ),
+                "dq9": (
+                    ("include hyperlink formatting with "
+                     "http://example.com/ as the URL to mimic detail format "
+                     "on Yab's site"),
+                    "create grotto object to make formatting easier",
+                    ("find method of storing aiohttp.ClientSession instance "
+                     "for repeated usage if available")
+                )
             }
         }
 
@@ -72,25 +80,29 @@ class GrottoBot(commands.Bot):
                 ret.append(name[:-3])
         return ret
 
-    async def send_embed(self, ctx, *args, **kwargs):
+    async def send_embed(self, ctx, message=None, *args, **kwargs):
+        args = [message]
         title = kwargs.pop("title", None)
         description = utils.multi_pop(kwargs, "description", "desc")
         fields = kwargs.pop("fields", {})
         footer = kwargs.pop("footer", None)
+        image = kwargs.pop("image", None)
         embed = discord.Embed(title=title, description=description)
 
         for name, value in fields.items():
             embed.add_field(name=name, value=value)
 
+        if image is not None:
+            embed.set_image(url=image)
         if footer is not None:
             embed.set_footer(footer)
-        await ctx.send(embed=embed)
+        return await ctx.send(*args, embed=embed)
 
     async def notify(self, owner: Owner, message: str):
         owner_found = self.get_user(owner.value)
 
         if owner_found:
-            await owner_found.send(message)
+            return await owner_found.send(message)
 
     # over-ridden
     def run(self, *args, **kwargs):
