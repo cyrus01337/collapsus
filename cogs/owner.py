@@ -62,8 +62,8 @@ class OwnerCog(commands.Cog, name="Owner Only",
         manipulate_extension = getattr(self.bot, f"{prefix}_extension")
 
         for cog in cogs:
-            if cog == "all" and len(manipulated) != len(self.cog_filenames):
-                manipulated = self.cog_filenames
+            if cog == "all" and len(manipulated) != len(self.cog_names):
+                manipulated = self.cog_names
             elif cog != "all":
                 resolved_name = self.resolve_cog(cog)
 
