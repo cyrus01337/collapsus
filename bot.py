@@ -98,12 +98,6 @@ class GrottoBot(commands.Bot):
             embed.set_footer(footer)
         return await ctx.send(*args, embed=embed)
 
-    async def notify(self, owner: Owner, message: str):
-        owner_found = self.get_user(owner.value)
-
-        if owner_found:
-            return await owner_found.send(message)
-
     # over-ridden
     def run(self, *args, **kwargs):
         super().run(_token.get(), *args, **kwargs)
@@ -130,7 +124,12 @@ class GrottoBot(commands.Bot):
         utils.clear_screen()
         print(self.user.name, end="\n\n")
         await self.change_presence(activity=activity)
-        await self.notify(Owner.DJ, "I'm up Dad")
+
+        for owner_id in (Owner.DJ, Owner.Gradis):
+            owner = self.get_user(owner_id)
+
+            if owner is not None:
+                owner.send("I'm up Dad")
 
     async def on_message(self, message):
         if all((self.received_love is False, message.guild is None,
