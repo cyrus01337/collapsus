@@ -102,7 +102,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             ret.append(elements)
         return tuple(ret)
 
-    def _parse_grotto(self, data: list):
+    def _parse_grotto(self, data: Iterable):
         ret = []
 
         for i, d in enumerate(data):

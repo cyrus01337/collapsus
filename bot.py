@@ -16,7 +16,7 @@ class GrottoBot(commands.Bot):
         super().__init__(case_insensitive=True, reconnect=True,
                          command_prefix=prefix.get())
         self.owner_ids = (
-            Owner.DJ.value,
+            Owner.CYRUS.value,
             Owner.GRADIS.value
         )
 
