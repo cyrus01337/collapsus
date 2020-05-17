@@ -125,7 +125,7 @@ class GrottoBot(commands.Bot):
         print(self.user.name, end="\n\n")
         await self.change_presence(activity=activity)
 
-        for owner_id in (Owner.DJ, Owner.Gradis):
+        for owner_id in (Owner.CYRUS, Owner.GRADIS):
             owner = self.get_user(owner_id)
 
             if owner is not None:
