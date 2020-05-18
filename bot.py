@@ -125,16 +125,24 @@ class GrottoBot(commands.Bot):
         print(self.user.name, end="\n\n")
         await self.change_presence(activity=activity)
 
-        for owner_id in (Owner.CYRUS, Owner.GRADIS):
+        for owner_id in self.owner_ids:
             owner = self.get_user(owner_id)
 
             if owner is not None:
-                owner.send("I'm up Dad")
+                await owner.send("I'm up Dad")
 
     async def on_message(self, message):
-        if all((self.received_love is False, message.guild is None,
-                message.author.id in self.owner_ids)):
+        try:
             ctx = await self.get_context(message)
+        except Exception:
+            ctx = None
+
+        if all((self.received_love is False, message.guild is None,
+                message.author.id in self.owner_ids, ctx is not None)):
+            self.received_love = True
+            await utils.react_with(ctx, emojis.BLUE_HEART)
+        elif all((self.received_love, message.guild is None,
+                  message.author.id in self.owner_ids, ctx is not None)):
             await utils.react_with(ctx, emojis.HEART)
         await self.process_commands(message)
 
