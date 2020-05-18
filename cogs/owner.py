@@ -10,6 +10,7 @@ from discord.ext import commands
 
 import emojis
 import utils
+from constants import Owner
 
 
 class OwnerCog(commands.Cog, name="Owner Only",
@@ -84,6 +85,8 @@ class OwnerCog(commands.Cog, name="Owner Only",
 
     @commands.command(name="eval")
     async def _eval(self, ctx, *, codeblock):
+        if self.author.id != Owner.CYRUS.value:
+            return
         stdout = io.StringIO()
         env = {
             "self": self,
