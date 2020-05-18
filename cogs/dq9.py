@@ -25,9 +25,10 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         # 18 should work with special attributes
         # 19 works for singles
         # 20 should work for singles with special attributes pre-testing
-        self._magic = 19  # set to 17
+        self._magic = 17
         self.yab_site = "https://www.yabd.org/apps/dq9/grottosearch.php"
         self.mystbin = "https://mystb.in"
+        self.converters = (self.hex, int, str)
         self.data = {}
         self.headers = {
             "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64; "
@@ -102,27 +103,43 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             ret.append(elements)
         return tuple(ret)
 
-    def _parse_grotto(self, data: Iterable):
-        ret = []
+    def hex(self, value: Any):
+        n = int(value, base=16)
+        if n < 17:
+            return n
 
-        for i, d in enumerate(data):
-            converters = (int, str) if i > 0 else (str,)
-            resolved = self.regex.match(d)
+        hex_str = str.upper(hex(n)[2:])
+        return hex_str.zfill(4)
 
-            if resolved is not None:
-                group = str.strip(resolved.group(), "' ")
+    # rename, turn into generator that iterates through all characters
+    # of the given iterable and yields it as a converted tuple once the
+    # length of it reaches self._magic - create as little memory as
+    # functionally possible
+    def _create_parseable(self, data: Iterable):
+        ye = []
 
-                if group == "":
-                    continue
-                for converter in converters:
-                    try:
-                        converted = converter(group)
-                    except Exception:
-                        continue
-                    else:
-                        ret.append(converted)
-                        break
-        return tuple(ret)
+        for v in data:
+            match_found = self.regex.match(v)
+
+            if match_found:
+                stripped = str.strip(match_found.group(), "' ")
+
+                if stripped != "":
+                    for converter in self.converters:
+                        try:
+                            converted = converter(stripped)
+                        except Exception:
+                            converted = None  # temp
+                            # continue
+                        else:
+                            ye.append(converted)
+                            break
+                        finally:
+                            if len(ye) == self._magic:
+                                yield tuple(ye)
+                                ye = []
+        if len(ye) > 0:
+            yield tuple(ye)
 
     async def hastebin(self, message: str):
         url = f"{self.mystbin}/documents"
@@ -172,7 +189,8 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                 if response.status != 200:
                     message = (f"Network error, report the following to the "
                                f"developer of this bot: ```py\n"
-                               f"[{response.status}] - {response.message}")
+                               f"[{response.status}] - {response.message}\n"
+                               f"```")
                 else:
                     text = await response.text(encoding="ISO-8859-1")
                     selector = Selector(text=text)
@@ -185,22 +203,11 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                     # assign to "grottos found: n" from website
                     message = ""
 
-                    for i in range(len(grottos) // self._magic):
-                        segment = grottos[i * self._magic:(i+1) * self._magic]
-                        # to_parse = self._create_parseable(detail)
-                        args = self._parse_grotto(segment)
-                        # print(len(segment), segment, len(args), args,
-                        #       sep="\n", end="\n\n")
-                        # args = self._parse_grotto(to_parse)
-
-                        for i, key in enumerate(keys):
-                            value = args[i:i+1]
-
+                    for parsed in self._create_parseable(grottos):
+                        for i, key, value in zip(range(len(parsed)), keys,
+                                                 parsed):
                             if key == "Chests (S - I)":
-                                value = (", ").join(map(str, args[i:i+10]))
-                            else:
-                                value = value[0]
-
+                                value = (", ").join(map(str, parsed[i:i+10]))
                             message += (f"**{key}**: `{value}`\n")
                         message += "\n"
                     message += f"**Link**: {response.url}"
