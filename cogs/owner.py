@@ -87,7 +87,11 @@ class OwnerCog(commands.Cog, name="Owner Only",
         stdout = io.StringIO()
         env = {
             "self": self,
+            "bot": self.bot,
             "ctx": ctx,
+            "guild": ctx.guild,
+            "author": ctx.author,
+            "channel": ctx.channel,
             **globals()
         }
         source = self.convert(codeblock)
