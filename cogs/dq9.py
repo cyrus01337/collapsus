@@ -21,23 +21,11 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         self.MIN_LOC = 1
         self.MAX_LEVEL = 99
         self.MAX_LOC = 150
-        # 17 should work for singles
-        # 18 should work with special attributes
-        # 19 works for singles
-        # 20 should work for singles with special attributes pre-testing
         self._magic = 17
         self.yab_site = "https://www.yabd.org/apps/dq9/grottosearch.php"
-        self.mystbin = "https://mystb.in"
         self.converters = (self.hex, int, str)
         self.data = {}
-        self.headers = {
-            "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64; "
-                           "rv:76.0) Gecko/20100101 Firefox/76.0,"),
-            "Accept-Encoding": "gzip, deflate",
-            "Accept": "*/*",
-            "Connection": "keep-alive",
-        }
-        self.regex = re.compile(r"([\w\d\./()\- ]+)")
+        self.regex = re.compile(r"([\w\d\.\- /()]+)")
 
         param_keys = ["prefix", "envname", "suffix"]
 
@@ -141,15 +129,6 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         if len(ye) > 0:
             yield tuple(ye)
 
-    async def hastebin(self, message: str):
-        url = f"{self.mystbin}/documents"
-
-        async with aiohttp.ClientSession(headers=self.headers) as session:
-            async with session.post(url, data=message) as response:
-                json = await response.json()
-                key = json.get("key")
-                return f"{self.mystbin}/{key}"
-
     @commands.command(usage="Granite Tunnel Woe 1 2D")
     async def grotto(self, ctx, prefix, material, suffix, level: int,
                      location=None, boss=None, grotto_type=None,
@@ -157,13 +136,14 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                      last_grotto_level: int = None):
         """Explanation"""
         level, location = self.evaluate(level, location)
-        keys = ("Seed", "Rank", "Name", "Boss", "Type", "Floors",
-                "Monster Rank", "Chests (S - I)")
         prefix, envname, suffix = self.get_data_by(
             prefix=prefix,
             envname=material,
             suffix=suffix
         )
+        keys = ("Seed", "Rank", "Name", "Boss", "Type", "Floors",
+                "Monster Rank", "Chests (S - I)")
+
         params = {
             "prefix": prefix,
             "envname": envname,
@@ -171,7 +151,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             "level": level,
             "search": "Search"
         }
-        other = {
+        additional = {
             "loc": location,
             "boss": boss,
             "type": grotto_type,
@@ -180,7 +160,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             "glev": last_grotto_level
         }
 
-        for key, value in other.items():
+        for key, value in additional.items():
             if value is not None:
                 params.setdefault(key, value)
 
@@ -213,13 +193,10 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                     message += f"**Link**: {response.url}"
 
                     if len(message) > 2000:
-                        # send message content to https://mystb.in/
-                        # message = utils.multi_replace(message, "*`", "")
                         message = (f"`Message > 2,000 characters, refer to "
                                    f"link below`\n\n"
 
                                    f"{response.url}")
-                        # f"{await self.hastebin(message)}")
                 await ctx.send(message)
                 # await self.bot.send_embed(ctx, response.url,
                 #                           title="Grotto",

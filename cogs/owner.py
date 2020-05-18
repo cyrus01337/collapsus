@@ -6,6 +6,7 @@ import textwrap
 import traceback
 from collections.abc import Iterable
 
+import aiohttp
 from discord.ext import commands
 
 import emojis
@@ -17,8 +18,16 @@ class OwnerCog(commands.Cog, name="Owner Only",
                command_attrs=dict(hidden=True)):
     def __init__(self, bot):
         self.bot = bot
+        self.mystbin = "https://mystb.in"
         self.hidden = True
         self.cog_names = self.bot.get_cog_filenames()
+        self.headers = {
+            "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64; "
+                           "rv:76.0) Gecko/20100101 Firefox/76.0,"),
+            "Accept-Encoding": "gzip, deflate",
+            "Accept": "*/*",
+            "Connection": "keep-alive",
+        }
 
     def convert(self, codeblock: str):
         for sub in ["```py\n", "\n```"]:
@@ -36,6 +45,18 @@ class OwnerCog(commands.Cog, name="Owner Only",
                 return cog
         return None
 
+    async def hastebin(self, message: str):
+        if message.endswith("\n") is False:
+            message += "\n"
+
+        async with aiohttp.ClientSession(headers=self.headers) as session:
+            response = await session.post(f"{self.mystbin}/documents",
+                                          data=message)
+            json = await response.json()
+            key = json.get("key")
+
+            return f"{self.mystbin}/{key}"
+
     async def cog_check(self, ctx):
         return await self.bot.is_owner(ctx.author)
 
@@ -46,6 +67,8 @@ class OwnerCog(commands.Cog, name="Owner Only",
     async def cog_after_invoke(self, ctx):
         if ctx.command_failed is False and ctx.command.name != "close":
             await utils.react_with(ctx, emojis.THUMBS_UP)
+        elif ctx.command_failed:
+            await utils.react_with(ctx, emojis.THUMBS_DOWN)
 
     async def cog_command_error(self, ctx, error):
         formatted = traceback.format_exception(type(error), error,
@@ -83,9 +106,14 @@ class OwnerCog(commands.Cog, name="Owner Only",
         utils.clear_screen()
         print(self.bot.user.name, end="\n\n")
 
+    @commands.command()
+    async def refresh(self, ctx, data="cogs"):
+        if data == "cogs":
+            self.cog_names = self.bot.get_cog_filenames()
+
     @commands.command(name="eval")
     async def _eval(self, ctx, *, codeblock):
-        if self.author.id != Owner.CYRUS.value:
+        if ctx.author.id != Owner.CYRUS.value:
             return
         stdout = io.StringIO()
         env = {
