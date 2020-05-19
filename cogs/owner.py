@@ -12,6 +12,7 @@ from discord.ext import commands
 import emojis
 import utils
 from constants import Owner
+from constants import HEADERS
 
 
 class OwnerCog(commands.Cog, name="Owner Only",
@@ -21,13 +22,6 @@ class OwnerCog(commands.Cog, name="Owner Only",
         self.mystbin = "https://mystb.in"
         self.hidden = True
         self.cog_names = self.bot.get_cog_filenames()
-        self.headers = {
-            "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64; "
-                           "rv:76.0) Gecko/20100101 Firefox/76.0,"),
-            "Accept-Encoding": "gzip, deflate",
-            "Accept": "*/*",
-            "Connection": "keep-alive",
-        }
 
     def convert(self, codeblock: str):
         for sub in ["```py\n", "\n```"]:
@@ -49,7 +43,7 @@ class OwnerCog(commands.Cog, name="Owner Only",
         if message.endswith("\n") is False:
             message += "\n"
 
-        async with aiohttp.ClientSession(headers=self.headers) as session:
+        async with aiohttp.ClientSession(headers=HEADERS) as session:
             response = await session.post(f"{self.mystbin}/documents",
                                           data=message)
             json = await response.json()
