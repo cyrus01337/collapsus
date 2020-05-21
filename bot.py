@@ -98,26 +98,7 @@ class GrottoBot(commands.Bot):
             embed.set_footer(footer)
         return await ctx.send(*args, embed=embed)
 
-    # over-ridden
-    def run(self, *args, **kwargs):
-        super().run(_token.get(), *args, **kwargs)
-
-    async def on_ready(self):
-        if self.initialised:
-            return
-        self.initialised = True
-        self.invite = discord.utils.oauth_url(
-            client_id=self.user.id,
-            permissions=discord.Permissions(
-                send_messages=True,
-                read_messages=True,
-                read_message_history=True,
-                manage_messages=True,
-                add_reactions=True,
-                embed_links=True
-            )
-        )
-
+    async def setup(self):
         activity = discord.Activity(type=discord.ActivityType.listening,
                                     name=f'"{prefix.DEFAULT}" and pings!')
 
@@ -130,6 +111,26 @@ class GrottoBot(commands.Bot):
 
             if owner is not None:
                 await owner.send("I'm up Dad")
+
+    # over-ridden
+    def run(self, *args, **kwargs):
+        super().run(_token.get(), *args, **kwargs)
+
+    async def on_ready(self):
+        if self.initialised is False:
+            self.initialised = True
+            self.invite = discord.utils.oauth_url(
+                client_id=self.user.id,
+                permissions=discord.Permissions(
+                    send_messages=True,
+                    read_messages=True,
+                    read_message_history=True,
+                    manage_messages=True,
+                    add_reactions=True,
+                    embed_links=True
+                )
+            )
+        await self.setup()
 
     async def on_message(self, message):
         try:
