@@ -10,6 +10,7 @@ from discord.ext import commands
 from parsel import Selector
 
 # import utils
+import emojis
 from constants import HEADERS
 
 
@@ -22,11 +23,11 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         self.MIN_LOC = 1
         self.MAX_LEVEL = 99
         self.MAX_LOC = 150
-        self._magic = 17
         self.yab_site = "https://www.yabd.org/apps/dq9/grottosearch.php"
-        self.converters = (self.hex, int, str)
+        self.SPECIAL = "Has a special floor"
+        self.converters = (self._hex, int, str)
         self.data = {}
-        self.regex = re.compile(r"([\w\d\.\- /()]+)")
+        self.regex = re.compile(r"([\w\d\.\-: /()]+)")
 
         param_keys = ["prefix", "envname", "suffix"]
 
@@ -77,34 +78,23 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             return ret[0]
         return tuple(ret)
 
-    def convert_to(self, value: Any, converter: Callable):
-        try:
-            return converter(value)
-        except Exception:
-            return value
-
-    def get_class(self, selector: Selector, *names: str):
-        ret = []
-
-        for name in names:
-            xpath = selector.xpath(f'//div[@class="{name}"]/text()')
-            elements = xpath.getall()
-            ret.append(elements)
-        return tuple(ret)
-
-    def hex(self, value: Any):
-        n = int(value, base=16)
-        if n < 17:
+    def _hex(self, value: Any):
+        n = int(value)
+        if n <= 16:
             return n
+        n = int(value, base=16)
 
         hex_str = str.upper(hex(n)[2:])
         return hex_str.zfill(4)
 
-    # rename, turn into generator that iterates through all characters
-    # of the given iterable and yields it as a converted tuple once the
-    # length of it reaches self._magic - create as little memory as
-    # functionally possible
-    def _create_parseable(self, data: Iterable):
+    def _is_special(self, data: tuple):
+        try:
+            return data[0] == self.SPECIAL
+        except ValueError:
+            return False
+
+    def _create_grotto(self, data: Iterable):
+        magic = 17
         ye = []
 
         for v in data:
@@ -114,18 +104,28 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                 stripped = str.strip(match_found.group(), "' ")
 
                 if stripped != "":
-                    for converter in self.converters:
+                    for i, converter in enumerate(self.converters):
                         try:
                             converted = converter(stripped)
                         except Exception:
-                            converted = None  # temp
-                            # continue
+                            converted = None
+                            continue
                         else:
-                            ye.append(converted)
+                            if isinstance(converted, str):
+                                if converted.find(":") > -1:
+                                    continue
+                                elif converted == self.SPECIAL:
+                                    magic = 18
+                                    ye.insert(0, converted)
+                                else:
+                                    ye.append(converted)
+                            else:
+                                ye.append(converted)
                             break
                         finally:
-                            if len(ye) == self._magic:
+                            if len(ye) == magic:
                                 yield tuple(ye)
+                                magic = 17
                                 ye = []
         if len(ye) > 0:
             yield tuple(ye)
@@ -175,16 +175,16 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                 else:
                     text = await response.text(encoding="ISO-8859-1")
                     selector = Selector(text=text)
-                    grottos, locations, attributes = self.get_class(
-                        selector,
-                        "inner",
-                        "minimap",
-                        "special"
-                    )
+                    selector.xpath('//div[@class="minimap"]').remove()
+                    grottos = selector.xpath('//div[@class="inner"]').getall()
                     # assign to "grottos found: n" from website
                     message = ""
 
-                    for parsed in self._create_parseable(grottos):
+                    for parsed in self._create_grotto(grottos):
+                        if self._is_special(parsed):
+                            message += f"{emojis.STAR} **Special**\n"
+                            parsed = parsed[1:]
+
                         for i, key, value in zip(range(len(parsed)), keys,
                                                  parsed):
                             if key == "Chests (S - I)":
