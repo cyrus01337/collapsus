@@ -176,7 +176,8 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                     text = await response.text(encoding="ISO-8859-1")
                     selector = Selector(text=text)
                     selector.xpath('//div[@class="minimap"]').remove()
-                    grottos = selector.xpath('//div[@class="inner"]').getall()
+                    divs = selector.xpath('//div[@class="inner"]//text()')
+                    grottos = divs.getall()
                     # assign to "grottos found: n" from website
                     message = ""
 
