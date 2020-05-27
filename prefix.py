@@ -1,7 +1,7 @@
 """Explanation"""
 from discord.ext import commands
 
-DEFAULT = "grotto "
+DEFAULT = "g!"
 
 
 def get():
