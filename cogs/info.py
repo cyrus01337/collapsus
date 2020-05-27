@@ -20,7 +20,7 @@ class Information(commands.Cog):
         """Explanation"""
         await ctx.send(f"The prefix is `{prefix.DEFAULT}` or you can mention "
                        f"me! E.g. `{prefix.DEFAULT} ping` or "
-                       f"{self.bot.mention}` ping`")
+                       f"{self.bot.user.mention}` ping`")
 
 
 def setup(bot):
