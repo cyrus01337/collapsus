@@ -20,7 +20,7 @@ class GrottoBot(commands.Bot):
             Owner.GRADIS.value
         )
 
-        self.initialised = False
+        self.is_online = False
         self.received_love = False
         self.invite_perms = discord.Permissions(
             send_messages=True,
@@ -116,21 +116,26 @@ class GrottoBot(commands.Bot):
     def run(self, *args, **kwargs):
         super().run(_token.get(), *args, **kwargs)
 
+    async def on_disconnect(self):
+        self.is_online = False
+
     async def on_ready(self):
-        if self.initialised is False:
-            self.initialised = True
-            self.invite = discord.utils.oauth_url(
-                client_id=self.user.id,
-                permissions=discord.Permissions(
-                    send_messages=True,
-                    read_messages=True,
-                    read_message_history=True,
-                    manage_messages=True,
-                    add_reactions=True,
-                    embed_links=True
+        if self.is_online is False:
+            self.is_online = True
+
+            if getattr(self, "invite", None) is None:
+                self.invite = discord.utils.oauth_url(
+                    client_id=self.user.id,
+                    permissions=discord.Permissions(
+                        send_messages=True,
+                        read_messages=True,
+                        read_message_history=True,
+                        manage_messages=True,
+                        add_reactions=True,
+                        embed_links=True
+                    )
                 )
-            )
-        await self.setup()
+            await self.setup()
 
     async def on_message(self, message):
         try:
