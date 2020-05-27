@@ -14,7 +14,7 @@ from constants import Owner
 class GrottoBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(case_insensitive=True, reconnect=True,
-                         command_prefix=prefix.get())
+                         **prefix.as_kwarg())
         self.owner_ids = Owner.all()
 
         self.is_online = False
