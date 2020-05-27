@@ -130,7 +130,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         if len(ye) > 0:
             yield tuple(ye)
 
-    @commands.command(usage="Granite Tunnel Woe 1 2D")
+    @commands.command(aliases=["g"])
     async def grotto(self, ctx, prefix, material, suffix, level: int,
                      location=None, boss=None, grotto_type=None,
                      max_level: int = None, max_revocations: int = None,
