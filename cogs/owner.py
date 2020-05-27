@@ -7,6 +7,7 @@ import traceback
 from collections.abc import Iterable
 
 import aiohttp
+import discord
 from discord.ext import commands
 
 import emojis
@@ -26,7 +27,8 @@ class OwnerCog(commands.Cog, name="Owner Only",
     def convert(self, codeblock: str):
         for sub in ["```py\n", "\n```"]:
             codeblock = codeblock.replace(sub, "")
-        indented = textwrap.indent(codeblock, "  ")
+        indented = textwrap.indent(discord.utils.escape_mentions(codeblock),
+                                   "  ")
 
         return (f"async def function():\n"
                 f"{indented}")
