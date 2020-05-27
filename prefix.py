@@ -5,8 +5,8 @@ with open("./resources/_prefix", "r") as f:
     DEFAULT = str.strip(f.read())
 
 
-def get():
-    return commands.when_mentioned_or(DEFAULT)
+def as_kwarg():
+    return dict(command_prefix=commands.when_mentioned_or(DEFAULT))
 
 
 def update(prefix: str):
