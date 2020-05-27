@@ -13,3 +13,6 @@ HEADERS = {
 class Owner(Enum):
     CYRUS = 668906205799907348
     GRADIS = 263694336040894465
+
+    def all():
+        return (Owner.CYRUS.value, Owner.GRADIS.value)

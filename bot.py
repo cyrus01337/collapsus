@@ -15,10 +15,7 @@ class GrottoBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(case_insensitive=True, reconnect=True,
                          command_prefix=prefix.get())
-        self.owner_ids = (
-            Owner.CYRUS.value,
-            Owner.GRADIS.value
-        )
+        self.owner_ids = Owner.all()
 
         self.is_online = False
         self.received_love = False
@@ -48,10 +45,6 @@ class GrottoBot(commands.Bot):
                     ("setup reminders to be dynamic instead of a static "
                      "variable sitting in a file"),
                     "owner-only reminders command :^)",
-                ),
-                "utils": (
-                    ("store token settings when encrypting, retrieve token "
-                     "settings as decrypting catalyst "),
                 ),
                 "settings": (
                     ("have to leave your configuration files locked up "
