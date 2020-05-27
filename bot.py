@@ -100,7 +100,7 @@ class GrottoBot(commands.Bot):
 
     async def setup(self):
         activity = discord.Activity(type=discord.ActivityType.listening,
-                                    name=f'"{prefix.DEFAULT}" and pings!')
+                                    name=f"{prefix.DEFAULT} and pings!")
 
         utils.clear_screen()
         print(self.user.name, end="\n\n")

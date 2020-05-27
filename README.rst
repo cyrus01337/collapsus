@@ -18,7 +18,7 @@ That being said, for those with determined interests, below are the requirements
 
 Prerequisites
 -------------
-- Python 3.5.3+
+- Python 3.8.2+
 - `Git <https://git-scm.com/downloads>`_
 - Pip (should come pre-installed with default Python)
 
@@ -38,6 +38,7 @@ Setup
     cd dq-grotto-bot
 
     # For those using a virtualenv
+    # For Unix, use pip3
     pip install -r requirements.txt
 
 Along with the repository you require an additional file named ``_token.py``, containing a synchronous function ``get()`` that returns your Discord bot token. The method used is subjective, however replacing this functionality to instead use coroutines requires manually editing ``bot.py``.
@@ -51,4 +52,4 @@ Upon completion Grotto Bot will work like any other Python file:
     py -3 bot.py
 
     # Linux/macOS
-    python3 bot.py
+    python3.8 bot.py
