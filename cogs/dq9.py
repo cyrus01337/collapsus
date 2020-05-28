@@ -27,7 +27,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         self.SPECIAL = "Has a special floor"
         self.converters = (self._hex, int, str)
         self.data = {}
-        self.regex = re.compile(r"([\w\d\.\-: /()]+)")
+        self.cleanup_regex = re.compile(r"([\w\d\.\-:/() ]+)")
 
         param_keys = ["prefix", "envname", "suffix"]
 
@@ -35,6 +35,10 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             with open(f"./resources/{key}", "r") as file:
                 value = [line.strip() for line in file.readlines()]
                 self.data.setdefault(key, value)
+
+        with open("./resources/regex", "r") as file:
+            pattern = str.strip(file.read())
+            self.grotto_regex = re.compile(pattern)
 
     def evaluate(self, level: int, location: int = None):
         ret = []
@@ -98,7 +102,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         ye = []
 
         for v in data:
-            match_found = self.regex.match(v)
+            match_found = self.cleanup_regex.match(v)
 
             if match_found:
                 stripped = str.strip(match_found.group(), "' ")
@@ -131,11 +135,10 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             yield tuple(ye)
 
     @commands.command(aliases=["g"])
-    async def grotto(self, ctx, prefix, material, suffix, level: int,
-                     location=None, boss=None, grotto_type=None,
-                     max_level: int = None, max_revocations: int = None,
-                     last_grotto_level: int = None):
+    async def grotto(self, ctx, *, query):
         """Explanation"""
+        data = self.grotto_regex.match(query)
+        return print(data)
         level, location = self.evaluate(level, location)
         prefix, envname, suffix = self.get_data_by(
             prefix=prefix,
