@@ -137,8 +137,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
     @commands.command(aliases=["g"])
     async def grotto(self, ctx, *, query):
         """Explanation"""
-        data = self.grotto_regex.match(query)
-        return print(data)
+        print(self.grotto_regex.match(query))
         level, location = self.evaluate(level, location)
         prefix, envname, suffix = self.get_data_by(
             prefix=prefix,
