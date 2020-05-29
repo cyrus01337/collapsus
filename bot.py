@@ -19,6 +19,8 @@ class GrottoBot(commands.Bot):
 
         self.is_online = False
         self.received_love = False
+        self.invite = None
+        self.channel = None
         self.invite_perms = discord.Permissions(
             send_messages=True,
             read_messages=True,
@@ -92,6 +94,7 @@ class GrottoBot(commands.Bot):
         return await ctx.send(*args, embed=embed)
 
     async def setup(self):
+        message = "I'm up"
         activity = discord.Activity(type=discord.ActivityType.listening,
                                     name=f"{prefix.DEFAULT} and pings!")
 
@@ -103,7 +106,8 @@ class GrottoBot(commands.Bot):
             owner = self.get_user(owner_id)
 
             if owner is not None:
-                await owner.send("I'm up Dad")
+                await owner.send(f"{message} Dad")
+        await self.channel.send(message)
 
     # over-ridden
     def run(self, *args, **kwargs):
@@ -116,7 +120,7 @@ class GrottoBot(commands.Bot):
         if self.is_online is False:
             self.is_online = True
 
-            if getattr(self, "invite", None) is None:
+            if self.invite is None:
                 self.invite = discord.utils.oauth_url(
                     client_id=self.user.id,
                     permissions=discord.Permissions(
@@ -128,6 +132,9 @@ class GrottoBot(commands.Bot):
                         embed_links=True
                     )
                 )
+
+            if self.channel is None:
+                self.channel = await self.fetch_channel(692867688325709835)
             await self.setup()
 
     async def on_message(self, message):
