@@ -41,18 +41,6 @@ class OwnerCog(commands.Cog, name="Owner Only",
                 return cog
         return None
 
-    async def hastebin(self, message: str):
-        if message.endswith("\n") is False:
-            message += "\n"
-
-        async with aiohttp.ClientSession(headers=HEADERS) as session:
-            response = await session.post(f"{self.mystbin}/documents",
-                                          data=message)
-            json = await response.json()
-            key = json.get("key")
-
-            return f"{self.mystbin}/{key}"
-
     async def cog_check(self, ctx):
         return await self.bot.is_owner(ctx.author)
 
