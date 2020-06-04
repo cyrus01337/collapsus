@@ -4,11 +4,12 @@ import os
 import discord
 from discord.ext import commands
 
+import _token
 import emojis
 import prefix
 import utils
-import _token
 from constants import Owner
+from constants import Status
 
 
 class GrottoBot(commands.Bot):
@@ -75,6 +76,21 @@ class GrottoBot(commands.Bot):
                 ret.append(name[:-3])
         return ret
 
+    async def alert(self, status: Status):
+        message = f"I'm {str.lower(status.name)}"
+
+        for owner_id in self.owner_ids:
+            owner = self.get_user(owner_id)
+
+            try:
+                await owner.send(f"{message} Dad")
+            except discord.Forbidden:
+                continue
+        try:
+            await self.channel.send(message)
+        except discord.Forbidden:
+            return
+
     async def send_embed(self, ctx, message=None, *args, **kwargs):
         args = [message]
         title = kwargs.pop("title", None)
@@ -94,24 +110,28 @@ class GrottoBot(commands.Bot):
         return await ctx.send(*args, embed=embed)
 
     async def setup(self):
-        message = "I'm up"
         activity = discord.Activity(type=discord.ActivityType.listening,
                                     name=f"{prefix.DEFAULT} and pings!")
 
         utils.clear_screen()
         print(self.user.name, end="\n\n")
         await self.change_presence(activity=activity)
-
-        for owner_id in self.owner_ids:
-            owner = self.get_user(owner_id)
-
-            if owner is not None:
-                await owner.send(f"{message} Dad")
-        await self.channel.send(message)
+        await self.alert(status=Status.UP)
 
     # over-ridden
     def run(self, *args, **kwargs):
         super().run(_token.get(), *args, **kwargs)
+
+    async def close(self, *args, **kwargs):
+        messages = {
+            "nt": f"Closing {self.user.name}...",
+            "posix": f"losing {self.user.name}..."
+        }
+        message = messages.get(os.name, messages.get("nt"))
+
+        print(message)
+        await self.alert(status=Status.DOWN)
+        await super().close()
 
     async def on_disconnect(self):
         self.is_online = False
