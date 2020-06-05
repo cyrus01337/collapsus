@@ -35,7 +35,7 @@ Setup
 .. code:: sh
 
     git clone https://github.com/cyrus01337/dq9-grotto-bot.git
-    cd dq-grotto-bot
+    cd dq9-grotto-bot
 
     # For those using a virtualenv
     # For Unix, use pip3
