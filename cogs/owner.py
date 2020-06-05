@@ -6,14 +6,14 @@ import textwrap
 import traceback
 from collections.abc import Iterable
 
-import aiohttp
+# import aiohttp
 import discord
 from discord.ext import commands
 
 import emojis
 import utils
+# from constants import HEADERS
 from constants import Owner
-from constants import HEADERS
 
 
 class OwnerCog(commands.Cog, name="Owner Only",
