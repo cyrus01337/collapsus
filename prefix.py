@@ -10,7 +10,7 @@ def as_kwarg():
 
 
 def update(prefix: str):
-    DEFAULT = prefix
+    # DEFAULT = prefix
 
     with open("./resources/_prefix", "w") as f:
         f.write(f"{prefix}\n")
