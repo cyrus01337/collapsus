@@ -4,6 +4,7 @@ import re
 # import aiohttp
 # import discord
 from discord.ext import commands
+# from discord.ext import menus
 
 from constants import Owner
 
@@ -43,7 +44,7 @@ class TestingCog(commands.Cog, command_attrs=dict(hidden=True)):
     async def cog_check(self, ctx):
         return ctx.author.id == Owner.CYRUS.value
 
-    @commands.group(invoke_without_subcommand=True)
+    @commands.group(invoke_without_command=True)
     async def test(self, ctx, *, query):
         # await self._default(ctx)
         await ctx.send(f"```\n"
@@ -51,7 +52,7 @@ class TestingCog(commands.Cog, command_attrs=dict(hidden=True)):
                        f"{self.grotto_regex.match(query)}\n"
                        f"```")
 
-    @test.group()
+    @test.group(invoke_without_command=True)
     async def outer(self, ctx, *args, **kwargs):
         await self._default(ctx)
 

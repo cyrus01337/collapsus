@@ -1,31 +1,17 @@
 """Explanation"""
 import re
-
 from collections.abc import Iterable
 from typing import Any
+from typing import Callable
 from typing import Mapping
 
 import aiohttp
 from discord.ext import commands
-from discord.ext import flags
-from discord.ext import menus
 from parsel import Selector
 
 # import utils
 import emojis
 from constants import HEADERS
-
-
-class Source(menus.ListPageSource):
-    def __init__(self, entries, *args, **kwargs):
-        super().__init__(entries, per_page=1, *args, **kwargs)
-
-    async def format_page(self, menu, entry):
-        current = menu.current_page + 1
-        maximum = self.get_max_pages()
-        return (f"**Page #{current} ({current}/{maximum})**\n\n"
-
-                f"{entry}")
 
 
 class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
@@ -41,7 +27,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         self.SPECIAL = "Has a special floor"
         self.converters = (self._hex, int, str)
         self.data = {}
-        self.cleanup_regex = re.compile(r"([\w\d\.\-:/() ]+)")
+        self.regex = re.compile(r"([\w\d\.\-: /()]+)")
 
         param_keys = ["prefix", "envname", "suffix"]
 
@@ -112,7 +98,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         ye = []
 
         for v in data:
-            match_found = self.cleanup_regex.match(v)
+            match_found = self.regex.match(v)
 
             if match_found:
                 stripped = str.strip(match_found.group(), "' ")
@@ -144,20 +130,11 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         if len(ye) > 0:
             yield tuple(ye)
 
-    @flags.add_flag("--location", default=None)
-    @flags.add_flag("--boss", default=None)
-    @flags.add_flag("--type", dest="grotto_type", default=None)
-    @flags.add_flag("--highest-hero-level", "-hhl", type=int, default=None)
-    @flags.add_flag("--highest-hero-revocations", "-hhr",
-                    type=int, default=None)
-    @flags.add_flag("--last-grotto-level", "-lgr", type=int, default=None)
-    @flags.command(aliases=["g"])
-    async def grotto(self, ctx,
-                     prefix, material,
-                     suffix, level: int,
-                     location=None, boss=None,
-                     grotto_type=None, highest_hero_level: int = None,
-                     max_revocs: int = None, last_grotto_level: int = None):
+    @commands.command(aliases=["g"])
+    async def grotto(self, ctx, prefix, material, suffix, level: int,
+                     location=None, boss=None, grotto_type=None,
+                     max_level: int = None, max_revocations: int = None,
+                     last_grotto_level: int = None):
         """Explanation"""
         level, location = self.evaluate(level, location)
         prefix, envname, suffix = self.get_data_by(
@@ -165,8 +142,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             envname=material,
             suffix=suffix
         )
-        keys = ("Seed", "Rank", "Name",
-                "Boss", "Type", "Floors",
+        keys = ("Seed", "Rank", "Name", "Boss", "Type", "Floors",
                 "Monster Rank", "Chests (S - I)")
 
         params = {
@@ -180,8 +156,8 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
             "loc": location,
             "boss": boss,
             "type": grotto_type,
-            "clev": highest_hero_level,
-            "rev": max_revocs,
+            "clev": max_level,
+            "rev": max_revocations,
             "glev": last_grotto_level
         }
 
@@ -202,11 +178,10 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                     selector.xpath('//div[@class="minimap"]').remove()
                     divs = selector.xpath('//div[@class="inner"]//text()')
                     grottos = divs.getall()
-                    entries = []
+                    # assign to "grottos found: n" from website
+                    message = ""
 
                     for parsed in self._create_grotto(grottos):
-                        message = ""
-
                         if self._is_special(parsed):
                             message += f"{emojis.STAR} **Special**\n"
                             parsed = parsed[1:]
@@ -216,17 +191,18 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                             if key == "Chests (S - I)":
                                 value = (", ").join(map(str, parsed[i:i+10]))
                             message += (f"**{key}**: `{value}`\n")
-                        message += (f"\n**Link**: <{response.url}>")
-                        entries.append(str.strip(message))
+                        message += "\n"
+                    message += f"**Link**: {response.url}"
 
-                    if len(entries) == 1:
-                        await ctx.send(entries[0])
-                    else:
-                        source = Source(entries)
-                        menu = menus.MenuPages(source=source,
-                                               clear_reactions_after=True,
-                                               timeout=90.0)
-                        await menu.start(ctx)
+                    if len(message) > 2000:
+                        message = (f"`Message > 2,000 characters, refer to "
+                                   f"link below`\n\n"
+
+                                   f"{response.url}")
+                await ctx.send(message)
+                # await self.bot.send_embed(ctx, response.url,
+                #                           title="Grotto",
+                #                           desc=f"[URL]({response.url})")
 
 
 def setup(bot):
