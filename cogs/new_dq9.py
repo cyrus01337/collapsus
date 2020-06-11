@@ -1,4 +1,5 @@
 """Explanation"""
+import random
 import re
 
 from collections.abc import Iterable
@@ -41,6 +42,19 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         self.SPECIAL = "Has a special floor"
         self.converters = (self._hex, int, str)
         self.data = {}
+        self.details = {
+            "Gender": ("Male", "Female"),
+            "Body Type": 5,
+            "Hairstyle": 10,
+            "Hair Colour": ("Dark Brown", "Light Brown", "Red", "Pink",
+                            "Yellow", "Green", "Dark Blue", "Purple",
+                            "Light Blue", "Grey"),
+            "Face": 10,
+            "Skin Colour": 8,
+            "Eye Colour": ("Black", "Brown", "Red", "Yellow",
+                           "Green", "Blue", "Purple", "Grey"),
+            "Name": self.get_random_name
+        }
         self.cleanup_regex = re.compile(r"([\w\d\.\-:/() ]+)")
 
         param_keys = ["prefix", "envname", "suffix"]
@@ -91,6 +105,24 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         if len(ret) == 1:
             return ret[0]
         return tuple(ret)
+
+    def get_random_name(self):
+        with open("./resources/names", "r") as names:
+            lines = names.readlines()
+            return str.strip(random.choice(lines))
+
+    def generate_rand_char(self):
+        chosen = {}
+
+        for key, options in self.details.items():
+            if callable(options):
+                value = options()
+            elif isinstance(options, int):
+                value = f"Type {random.randint(1, options)}"
+            else:
+                value = random.choice(options)
+            chosen.setdefault(key, value)
+        return chosen
 
     def _hex(self, value: Any):
         n = int(value)
@@ -227,6 +259,16 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                                                clear_reactions_after=True,
                                                timeout=90.0)
                         await menu.start(ctx)
+
+    @commands.group(invoke_without_subcommand=True)
+    async def random(self, ctx):
+        """Explanation"""
+        message = ""
+        rand_details = self.generate_rand_char()
+
+        for key, value in rand_details.items():
+            message += f"**{key}**: {value}\n"
+        await ctx.send(message)
 
 
 def setup(bot):
