@@ -28,14 +28,15 @@ async def react_with(ctx, *emojis):
         await ctx.message.add_reaction(emoji)
 
 
-async def mystbin(self, message: str):
+async def mystbin(message: str):
+    url = "https://mystb.in"
+
     if message.endswith("\n") is False:
         message += "\n"
 
     async with aiohttp.ClientSession(headers=HEADERS) as session:
-        response = await session.post(f"{self.mystbin}/documents",
-                                      data=message)
+        response = await session.post(f"{url}/documents", data=message)
         json = await response.json()
         key = json.get("key")
 
-        return f"{self.mystbin}/{key}"
+        return f"{url}/{key}"
