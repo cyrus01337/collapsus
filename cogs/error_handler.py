@@ -1,8 +1,12 @@
 """Explanation"""
+import sqlite3
 # import sys
 
-# import discord
+import discord
 from discord.ext import commands
+
+import prefix
+import quotes
 
 
 class ErrorHandlerCog(commands.Cog):
@@ -22,11 +26,31 @@ class ErrorHandlerCog(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error, *args, **kwargs):
         error = getattr(error, "original", error)
+        message = ""
 
         if isinstance(error, self.ignored):
             return print(type(error).__name__)
+        elif isinstance(error, quotes.InternalQuotesError):
+            message = str.capitalize(error.message)
+        elif isinstance(error, sqlite3.OperationalError):
+            if str(error) == "database is locked":
+                message = (f"The database is locked which prevents command "
+                           f"systems like `{prefix.DEFAULT}quote` to no "
+                           f"longer work. Please let the developer know that "
+                           f"he's an idiot and needs to close his database "
+                           f"browser")
+            else:
+                message = error
         else:
-            await ctx.send(error)
+            message = error
+
+        try:
+            await ctx.send(message)
+            # prepend linebreak to improve error message readability
+            print()
+        except discord.Forbidden:
+            pass
+        finally:
             raise error
 
 
