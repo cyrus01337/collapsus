@@ -2,6 +2,7 @@
 import contextlib
 import io
 import json
+# import os
 import textwrap
 import traceback
 from collections.abc import Iterable
@@ -14,13 +15,13 @@ import emojis
 import utils
 # from constants import HEADERS
 from constants import Owner
+from constants import Status
 
 
 class OwnerCog(commands.Cog, name="Owner Only",
                command_attrs=dict(hidden=True)):
     def __init__(self, bot):
         self.bot = bot
-        self.mystbin = "https://mystb.in"
         self.hidden = True
         self.cog_names = self.bot.get_cog_filenames()
 

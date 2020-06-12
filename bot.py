@@ -119,18 +119,15 @@ class GrottoBot(commands.Bot):
         await self.alert(status=Status.UP)
 
     # over-ridden
+    def load_extension(self, *args, **kwargs):
+        super().load_extension(*args, **kwargs)
+
     def run(self, *args, **kwargs):
         super().run(_token.get(), *args, **kwargs)
 
     async def close(self, *args, **kwargs):
-        messages = {
-            "nt": f"Closing {self.user.name}...",
-            "posix": f"losing {self.user.name}..."
-        }
-        message = messages.get(os.name, messages.get("nt"))
-
-        print(message)
-        await self.alert(status=Status.DOWN)
+        print(f"Closing {self.bot.user.name}...")
+        await self.bot.alert(status=Status.DOWN)
         await super().close()
 
     async def on_disconnect(self):
