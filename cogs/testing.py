@@ -6,6 +6,7 @@ import re
 from discord.ext import commands
 # from discord.ext import menus
 
+# import quotes
 from constants import Owner
 
 
