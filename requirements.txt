@@ -1,4 +1,5 @@
 discord.py==1.3.3
 parsel==1.6.0
 discord-flags==2.1.1
+aiosqlite==0.13.0
 git+https://github.com/Rapptz/discord-ext-menus
