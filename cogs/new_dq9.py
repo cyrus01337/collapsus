@@ -191,6 +191,7 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                      grotto_type=None, highest_hero_level: int = None,
                      max_revocs: int = None, last_grotto_level: int = None):
         """Explanation"""
+        message = ""
         level, location = self.evaluate(level, location)
         prefix, envname, suffix = self.get_data_by(
             prefix=prefix,
@@ -223,6 +224,9 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
 
         async with aiohttp.ClientSession(headers=HEADERS) as session:
             async with session.post(self.yab_site, params=params) as response:
+                entries = []
+                entry_count = 0
+
                 if response.status != 200:
                     message = (f"Network error, report the following to the "
                                f"developer of this bot: ```py\n"
@@ -234,7 +238,6 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                     selector.xpath('//div[@class="minimap"]').remove()
                     divs = selector.xpath('//div[@class="inner"]//text()')
                     grottos = divs.getall()
-                    entries = []
 
                     for parsed in self._create_grotto(grottos):
                         message = ""
@@ -250,15 +253,21 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                             message += (f"**{key}**: `{value}`\n")
                         message += (f"\n**Link**: <{response.url}>")
                         entries.append(str.strip(message))
+                    entry_count = len(entries)
 
-                    if len(entries) == 1:
-                        await ctx.send(entries[0])
-                    else:
-                        source = Source(entries)
-                        menu = menus.MenuPages(source=source,
-                                               clear_reactions_after=True,
-                                               timeout=90.0)
-                        await menu.start(ctx)
+                    if entry_count == 1:
+                        message = entries[0]
+                    elif entry_count == 0:
+                        message = "That grotto doesn't exist"
+
+                if entry_count > 1:
+                    source = Source(entries)
+                    menu = menus.MenuPages(source=source,
+                                           clear_reactions_after=True,
+                                           timeout=90.0)
+                    await menu.start(ctx)
+                else:
+                    await ctx.send(message)
 
     @commands.group(invoke_without_subcommand=True)
     async def random(self, ctx):
