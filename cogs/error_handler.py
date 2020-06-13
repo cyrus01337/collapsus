@@ -1,12 +1,13 @@
 """Explanation"""
 import sqlite3
-# import sys
+import sys
 
 import discord
 from discord.ext import commands
 
+import database
 import prefix
-import quotes
+# import quotes
 
 
 class ErrorHandlerCog(commands.Cog):
@@ -18,10 +19,10 @@ class ErrorHandlerCog(commands.Cog):
             commands.CommandNotFound
         )
 
-    # @commands.Cog.listener()
-    # async def on_error(self, event, *args, **kwargs):
-    #     error = sys.exc_info()[1]
-    #     raise error
+    @commands.Cog.listener()
+    async def on_error(self, event, *args, **kwargs):
+        error = sys.exc_info()[1]
+        raise error
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error, *args, **kwargs):
@@ -30,7 +31,7 @@ class ErrorHandlerCog(commands.Cog):
 
         if isinstance(error, self.ignored):
             return print(type(error).__name__)
-        elif isinstance(error, quotes.InternalQuotesError):
+        elif isinstance(error, database.InternalQuotesError):
             message = str.capitalize(error.message)
         elif isinstance(error, sqlite3.OperationalError):
             if str(error) == "database is locked":

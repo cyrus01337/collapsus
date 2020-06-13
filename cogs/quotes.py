@@ -6,8 +6,9 @@ from discord.ext import commands
 from discord.ext import flags
 from discord.ext import menus
 
+import database
 import prefix
-import quotes
+# import quotes
 import utils
 
 
@@ -26,7 +27,17 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         self.bot = bot
         self.markdown = re.compile(r"[\*_`~]")
 
-        self.bot.loop.create_task(quotes.init())
+        self.bot.loop.create_task(self.__ainit__())
+
+    async def __ainit__(self):
+        await self.bot.wait_until_ready()
+        self.db = await database.Database.create(self.bot.loop)
+
+    async def cog_check(self, ctx):
+        return await self.db.in_blacklist(ctx.author.id, expect=True)
+
+    def cog_unload(self):
+        self.bot.loop.create_task(self.db.close())
 
     @flags.add_flag("name", nargs="+")
     @flags.add_flag("--raw", action="store_true")
@@ -37,8 +48,8 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         Make references to previously made statements with quote add
         """
         name = (" ").join(flags.get("name"))
-        original = await quotes.resolve_alias(name)
-        message = await quotes.get("quote", name=name)
+        original = await self.db.resolve_alias(name)
+        message = await self.db.get("quote", name=name)
 
         if flags.get("raw"):
             url = await utils.mystbin(message)
@@ -46,7 +57,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         else:
             message = discord.utils.escape_mentions(message)
 
-        await quotes.increment(ctx.author.id, original or name)
+        await self.db.increment(ctx.author.id, original or name)
         await ctx.send(message)
 
     @quote.command(name="add",
@@ -62,7 +73,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
             message = f'Added new quote "{name}"'
             quote = discord.utils.escape_mentions(quote)
 
-            await quotes.add(ctx.author.id, name, quote)
+            await self.db.add(ctx.author.id, name, quote)
         await ctx.send(message)
 
     @quote.command(name="edit", aliases=["modify"],
@@ -71,7 +82,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         """
         Make changes to an existing quote you've made
         """
-        await quotes.edit(ctx.author.id, name, quote=quote)
+        await self.db.edit(ctx.author.id, name, quote=quote)
         await ctx.send(f'Edited "{name}"')
 
     @quote.command(name="remove", aliases=["delete"],
@@ -80,12 +91,15 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         """
         Delete an owned quote
         """
-        check = quotes.owned_by
+        check = self.db.owned_by
         permissions = ctx.author.guild_permissions
+        is_mod = (permissions.administrator
+                  or permissions.manage_guild
+                  or permissions.manage_messages)
 
-        if permissions.administrator or permissions.manage_guild:
+        if is_mod:
             check = None
-        await quotes.remove(ctx.author.id, name, check=check)
+        await self.db.remove(ctx.author.id, name, check=check)
         await ctx.send(f'Removed quote "{name}"')
 
     @quote.command(name="list",
@@ -97,7 +111,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         if the member is not given)
         """
         member = member or ctx.author
-        names = await quotes.get_all(member.id, "name")
+        names = await self.db.get_all(member.id, "name")
 
         if names is None:
             pronoun = "You" if member == ctx.author else "They"
@@ -118,21 +132,46 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         Set a nickname for a quote to be referenced by (multiple can be
         assigned)
         """
-        await quotes.add_alias(name, alias)
+        await self.db.add_alias(name, alias)
         await ctx.send(f'Added alias "{alias}" to "{name}"')
 
-    # @quote.command(name="info", aliases=["resolve"],
-    #                usage=f"{prefix.DEFAULT}quote info what is mks")
-    # async def quote_info(self, ctx, name):
-    #     """
-    #     Display quote information, such as the owner of the quote and
-    #     how many times it's been used
-    #     """
-    #     name = await quotes.resolve_alias(name)
-    #     args = ("author_id", "uses")
-    #     author_id, uses = await quotes.get_all(ctx.author.id, *args)
-    #     print(author_id, type(author_id))
-    #     # author = self.bot.get_user(author_id)
+    @quote.command(name="info", aliases=["resolve"],
+                   usage=f"{prefix.DEFAULT}quote info what is mks")
+    async def quote_info(self, ctx, name):
+        """
+        Display quote information, such as the owner of the quote and
+        how many times it's been used
+        """
+        args = ("author_id", "uses")
+        name = await self.db.resolve_alias(name)
+        author_id, uses = await self.db.get(author_id=ctx.author.id, *args)
+        aliases = await self.db.get_aliases(name)
+        author = ctx.guild.get_member(author_id)
+
+        if aliases is None:
+            aliases = "`None`"
+        else:
+            aliases = (", ").join(f"`{a}`" for a in aliases)
+
+        if author is None:
+            author = "<Invalid User>"
+        await ctx.send(f"**Tag:** {name}\n"
+                       f"**Uses:** {uses:,}\n"
+                       f"**Owner:** `{author}`\n"
+                       f"**Aliases:** {aliases}")
+
+    @quote.command(name="blacklist", aliases=["bl", "ban"],
+                   usage=f"{prefix.DEFAULT}quote blacklist @Gradis#6666\n"
+                         f"{prefix.DEFAULT}quote blacklist 263694336040894465")
+    @commands.check_any(commands.has_guild_permissions(administrator=True),
+                        commands.has_guild_permissions(manage_guild=True),
+                        commands.has_guild_permissions(manage_messages=True))
+    async def quote_blacklist(self, ctx, member: discord.Member):
+        """
+        Punish the member specified by preventing them from using the
+        quotes system
+        """
+        await self.db.blacklist(member.id)
 
 
 def setup(bot):
