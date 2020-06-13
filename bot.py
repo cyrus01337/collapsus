@@ -1,4 +1,5 @@
 """Discord bot base"""
+import asyncio
 import os
 
 import discord
@@ -22,13 +23,6 @@ class GrottoBot(commands.Bot):
         self.received_love = False
         self.invite = None
         self.channel = None
-        self.invite_perms = discord.Permissions(
-            send_messages=True,
-            read_messages=True,
-            read_message_history=True,
-            add_reactions=True,
-            embed_links=True
-        )
         # wow this looks like json
         self.reminders = {
             "todo": {
@@ -63,9 +57,46 @@ class GrottoBot(commands.Bot):
                 )
             }
         }
+        self.invite_perms = discord.Permissions(
+            send_messages=True,
+            read_messages=True,
+            read_message_history=True,
+            add_reactions=True,
+            embed_links=True
+        )
 
         for file in self.get_cog_filenames():
             self.load_extension(f"cogs.{file}")
+
+        self.loop.create_task(self.setup())
+        self.loop.create_task(self.init_display())
+
+    # tasks
+    async def setup(self):
+        await self.wait_until_ready()
+        self.channel = await self.fetch_channel(692867688325709835)
+        self.invite = discord.utils.oauth_url(
+            client_id=self.user.id,
+            permissions=discord.Permissions(
+                send_messages=True,
+                read_messages=True,
+                read_message_history=True,
+                manage_messages=True,
+                add_reactions=True,
+                embed_links=True
+            )
+        )
+
+        await self.alert(status=Status.UP)
+
+    async def init_display(self):
+        await self.wait_until_ready()
+        activity = discord.Activity(type=discord.ActivityType.listening,
+                                    name=f"{prefix.DEFAULT} and pings!")
+
+        utils.clear_screen()
+        print(self.user.name, end="\n\n")
+        await self.change_presence(activity=activity)
 
     # helper methods
     def get_cog_filenames(self):
@@ -109,15 +140,6 @@ class GrottoBot(commands.Bot):
             embed.set_footer(footer)
         return await ctx.send(*args, embed=embed)
 
-    async def setup(self):
-        activity = discord.Activity(type=discord.ActivityType.listening,
-                                    name=f"{prefix.DEFAULT} and pings!")
-
-        utils.clear_screen()
-        print(self.user.name, end="\n\n")
-        await self.change_presence(activity=activity)
-        await self.alert(status=Status.UP)
-
     # over-ridden
     def load_extension(self, *args, **kwargs):
         super().load_extension(*args, **kwargs)
@@ -126,33 +148,15 @@ class GrottoBot(commands.Bot):
         super().run(_token.get(), *args, **kwargs)
 
     async def close(self, *args, **kwargs):
-        print(f"Closing {self.bot.user.name}...")
-        await self.bot.alert(status=Status.DOWN)
+        if self.is_closed():
+            return
+
+        print(f"Closing {self.user.name}...")
+        await self.alert(status=Status.DOWN)
         await super().close()
 
     async def on_disconnect(self):
         self.is_online = False
-
-    async def on_ready(self):
-        if self.is_online is False:
-            self.is_online = True
-
-            if self.invite is None:
-                self.invite = discord.utils.oauth_url(
-                    client_id=self.user.id,
-                    permissions=discord.Permissions(
-                        send_messages=True,
-                        read_messages=True,
-                        read_message_history=True,
-                        manage_messages=True,
-                        add_reactions=True,
-                        embed_links=True
-                    )
-                )
-
-            if self.channel is None:
-                self.channel = await self.fetch_channel(692867688325709835)
-            await self.setup()
 
     async def on_message(self, message):
         try:

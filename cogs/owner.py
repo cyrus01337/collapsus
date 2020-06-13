@@ -15,7 +15,7 @@ import emojis
 import utils
 # from constants import HEADERS
 from constants import Owner
-from constants import Status
+# from constants import Status
 
 
 class OwnerCog(commands.Cog, name="Owner Only",
