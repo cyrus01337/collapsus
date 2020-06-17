@@ -10,6 +10,7 @@ from collections.abc import Iterable
 # import aiohttp
 import discord
 from discord.ext import commands
+from discord.ext import flags
 
 import emojis
 import utils
@@ -41,6 +42,9 @@ class OwnerCog(commands.Cog, name="Owner Only",
             if cog.startswith(name):
                 return cog
         return None
+
+    async def __hackclose(self):
+        await super(self.bot.__class__, self.bot).close()
 
     async def cog_check(self, ctx):
         return await self.bot.is_owner(ctx.author)
@@ -129,9 +133,10 @@ class OwnerCog(commands.Cog, name="Owner Only",
                        f"{ret}\n"
                        f"```")
 
-    @commands.command()
-    async def close(self, ctx):
-        await self.bot.close()
+    @flags.add_flag("--force", "-f", action="store_true")
+    @flags.command()
+    async def close(self, ctx, **flags):
+        await self.bot.close(forced_close=flags.get("force"))
 
 
 def setup(bot):

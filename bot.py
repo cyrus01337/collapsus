@@ -153,6 +153,9 @@ class GrottoBot(commands.Bot):
 
         print(f"Closing {self.user.name}...")
         await self.alert(status=Status.DOWN)
+
+        if kwargs.pop("forced_close"):
+            return await super(self.__class__, self).close()
         await super().close()
 
     async def on_disconnect(self):
