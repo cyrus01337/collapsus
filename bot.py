@@ -1,5 +1,5 @@
 """Discord bot base"""
-import asyncio
+# import asyncio
 import os
 
 import discord
@@ -154,7 +154,7 @@ class GrottoBot(commands.Bot):
         print(f"Closing {self.user.name}...")
         await self.alert(status=Status.DOWN)
 
-        if kwargs.pop("forced_close"):
+        if kwargs.get("forced_close", False):
             return await super(self.__class__, self).close()
         await super().close()
 
