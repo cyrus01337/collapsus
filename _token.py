@@ -15,7 +15,7 @@ def get(columns: int = 4, magic: int = 3, eof: int = 9786):
             if value == eof:
                 return token
             token += chr(value)
-        raise SyntaxError(f"token has no EOF character")
+        raise SyntaxError("token has no EOF character")
 
 
 def set(token, columns: int = 4, magic: int = 3, fill: int = 16,

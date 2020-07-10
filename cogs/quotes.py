@@ -172,6 +172,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         quotes system
         """
         await self.db.blacklist(member.id)
+        await ctx.send(f"Successfully blacklisted {member}")
 
 
 def setup(bot):
