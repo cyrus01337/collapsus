@@ -1,4 +1,3 @@
-cd dq9-grotto-bot
 git pull
 pip install -U -r requirements.txt
 python bot.py
