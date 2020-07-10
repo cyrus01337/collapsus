@@ -4,7 +4,7 @@ import io
 import json
 # import os
 import textwrap
-import traceback
+# import traceback
 from collections.abc import Iterable
 
 # import aiohttp
@@ -15,6 +15,7 @@ from discord.ext import flags
 import emojis
 import utils
 # from constants import HEADERS
+# from constants import IGNORED_ERRORS
 from constants import Owner
 # from constants import Status
 
@@ -58,15 +59,6 @@ class OwnerCog(commands.Cog, name="Owner Only",
             await utils.react_with(ctx, emojis.THUMBS_UP)
         elif ctx.command_failed:
             await utils.react_with(ctx, emojis.THUMBS_DOWN)
-
-    async def cog_command_error(self, ctx, error):
-        formatted = traceback.format_exception(type(error), error,
-                                               error.__traceback__)
-        tb = ("").join(formatted)
-        await ctx.send(f"```py\n"
-                       f"{tb}\n"
-                       f"```")
-        raise error
 
     @commands.command(aliases=["load", "unload", "reload", "r"])
     async def manipulate_cog(self, ctx, *cogs):

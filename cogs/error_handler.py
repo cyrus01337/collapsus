@@ -1,6 +1,7 @@
 """Explanation"""
 import sqlite3
 import sys
+import traceback
 
 import discord
 from discord.ext import commands
@@ -8,20 +9,20 @@ from discord.ext import commands
 import database
 import prefix
 # import quotes
+from constants import IGNORED_ERRORS
 
 
 class ErrorHandlerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.hidden = True
-        self.ignored = (
-            commands.CheckFailure,
-            commands.CommandNotFound
-        )
 
     @commands.Cog.listener()
     async def on_error(self, event, *args, **kwargs):
         error = sys.exc_info()[1]
+
+        if isinstance(error, self.ignored):
+            return
         raise error
 
     @commands.Cog.listener()
@@ -29,7 +30,7 @@ class ErrorHandlerCog(commands.Cog):
         error = getattr(error, "original", error)
         message = ""
 
-        if isinstance(error, self.ignored):
+        if isinstance(error, IGNORED_ERRORS):
             return print(type(error).__name__)
         elif isinstance(error, database.InternalQuotesError):
             message = str.capitalize(error.message)
@@ -46,9 +47,16 @@ class ErrorHandlerCog(commands.Cog):
             message = error
 
         try:
-            await ctx.send(message)
+            formatted = traceback.format_exception(type(error), error,
+                                                   error.__traceback__)
+            tb = ("").join(formatted)
+            message = (f"```py\n"
+                       f"{tb}\n"
+                       f"```")
+
             # prepend linebreak to improve error message readability
             print()
+            await ctx.send(message)
         except discord.Forbidden:
             pass
         finally:
