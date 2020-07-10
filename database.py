@@ -83,7 +83,7 @@ class Database(object):
                     return row
             return row[0]
 
-    async def in_blacklist(self, member_id, expect=False):
+    async def in_blacklist(self, member_id, expected=False):
         query = "SELECT member_id FROM blacklist WHERE member_id=?;"
         params = (
             member_id,
@@ -92,13 +92,11 @@ class Database(object):
         async with self._connection.execute(query, params) as cursor:
             row = await cursor.fetchone()
 
-            if expect is False:
-                if row is None:
-                    raise InternalQuotesError("member is already blacklisted")
-            elif expect is True:
-                if row is not None:
-                    raise InternalQuotesError("member is already blacklisted")
-            return expect
+            if expected is False and row is None:
+                raise InternalQuotesError("member is not blacklisted")
+            elif expected is True and row is not None:
+                raise InternalQuotesError("member is already blacklisted")
+            return expected
 
     # core api
     async def add(self, author_id: id, name: str, quote: str):
@@ -228,7 +226,7 @@ class Database(object):
 
         # errors if entry isn't owned by author
         if check:
-            await self.owned_by(self._connection, name, author_id)
+            await self.owned_by(name, author_id)
         await self._connection.execute(query, params)
         await self._connection.commit()
 
