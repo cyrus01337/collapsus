@@ -34,7 +34,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         self.db = await database.Database.create(self.bot.loop)
 
     async def cog_check(self, ctx):
-        return await self.db.in_blacklist(ctx.author.id, expect=True)
+        return not await self.db.in_blacklist(ctx.author.id)
 
     def cog_unload(self):
         self.bot.loop.create_task(self.db.close())
