@@ -233,7 +233,7 @@ class Database(object):
         )
 
         if check is not None:
-            await check(self._connection, name, author_id)
+            await check(name, author_id)
         await self._connection.execute(query, params)
         await self._connection.commit()
 
