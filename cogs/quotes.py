@@ -39,7 +39,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
     def cog_unload(self):
         self.bot.loop.create_task(self.db.close())
 
-    @flags.add_flag("--name", nargs="*")
+    @flags.add_flag("name", nargs="*")
     @flags.add_flag("--raw", action="store_true")
     @flags.group(aliases=["q"], usage=f"{prefix.DEFAULT}quote test",
                  invoke_without_command=True)
