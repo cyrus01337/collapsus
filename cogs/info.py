@@ -1,12 +1,9 @@
 """Explanation"""
-import random
-import string
 import typing
 
 from discord.ext import commands
 
 import emojis
-import prefix
 
 
 class Information(commands.Cog):
@@ -42,8 +39,8 @@ class Information(commands.Cog):
     @commands.command(name="prefix")
     async def _prefix(self, ctx):
         """Explanation"""
-        await ctx.send(f"The prefix is `{prefix.DEFAULT}` or you can mention "
-                       f"me! E.g. `{prefix.DEFAULT} ping` or "
+        await ctx.send(f"The prefix is `{ctx.prefix}` or you can mention "
+                       f"me! E.g. `{ctx.prefix} ping` or "
                        f"{self.bot.user.mention}` ping`")
 
     @commands.command()

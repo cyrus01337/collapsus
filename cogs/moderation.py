@@ -1,7 +1,7 @@
 """Explanation"""
 from discord.ext import commands
 
-import prefix
+# import prefix
 
 
 class ModerationCog(commands.Cog, name="Moderation"):
@@ -16,7 +16,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
         """Explanation"""
         message = ""
         settings = {
-            "prefix": f"`{prefix.DEFAULT}`"
+            "prefix": f"`{ctx.prefix}`"
         }
 
         for key, value in settings.items():

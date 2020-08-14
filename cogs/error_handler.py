@@ -37,7 +37,7 @@ class ErrorHandlerCog(commands.Cog):
         elif isinstance(error, sqlite3.OperationalError):
             if str(error) == "database is locked":
                 message = (f"The database is locked which prevents command "
-                           f"systems like `{prefix.DEFAULT}quote` to no "
+                           f"systems like `{ctx.prefix}quote` to no "
                            f"longer work. Please let the developer know that "
                            f"he's an idiot and needs to close his database "
                            f"browser")
