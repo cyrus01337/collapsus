@@ -47,9 +47,10 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         """
         Make references to previously made statements with quote add
         """
-        if flags.get("name") is None:
+        name = flags.get("name")
+        if name is None:
             return
-        name = (" ").join(flags.get("name"))
+        name = (" ").join(name)
         original = await self.db.resolve_alias(name)
         message = await self.db.get("quote", name=name)
 
