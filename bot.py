@@ -27,11 +27,6 @@ class GrottoBot(commands.Bot):
         self.settings = ujson.load(open(self.settings_path, "r"))
         # wow this looks like json
         self.reminders = {
-            "todo": {
-                "run": (
-                    "add editable prefix settings"
-                ),
-            },
             "idea": {
                 "custom": (
                     "create custom.py and create own Embed class",
@@ -39,20 +34,11 @@ class GrottoBot(commands.Bot):
                      "(place into owner.py upon completion)"),
                 ),
                 "owner": (
-                    ("create owner-specific cog for live eval/exec "
-                     "functionality"),
                     ("setup reminders to be dynamic instead of a static "
                      "variable sitting in a file"),
                     "owner-only reminders command :^)",
                 ),
-                "settings": (
-                    ("have to leave your configuration files locked up "
-                     "somewhere"),
-                ),
                 "dq9": (
-                    ("include hyperlink formatting with "
-                     "http://example.com/ as the URL to mimic detail format "
-                     "on Yab's site"),
                     "create grotto object to make formatting easier",
                     ("find method of storing aiohttp.ClientSession instance "
                      "for repeated usage if available")
@@ -63,8 +49,7 @@ class GrottoBot(commands.Bot):
             send_messages=True,
             read_messages=True,
             read_message_history=True,
-            add_reactions=True,
-            embed_links=True
+            add_reactions=True
         )
 
         for file in self.get_cog_filenames():
