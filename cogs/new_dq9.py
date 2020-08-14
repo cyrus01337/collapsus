@@ -1,6 +1,7 @@
 """Explanation"""
 import random
 import re
+import traceback
 
 from collections.abc import Iterable
 from typing import Any
@@ -41,6 +42,9 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         self.yab_site = "https://www.yabd.org/apps/dq9/grottosearch.php"
         self.SPECIAL = "Has a special floor"
         self.converters = (self._hex, int, str)
+        self.keys = ("Seed", "Rank", "Name",
+                     "Boss", "Type", "Floors",
+                     "Monster Rank", "Chests (S - I)")
         self.data = {}
         self.details = {
             "Gender": ("Male", "Female"),
@@ -193,14 +197,26 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
         """Explanation"""
         message = ""
         level, location = self.evaluate(level, location)
-        prefix, envname, suffix = self.get_data_by(
-            prefix=prefix,
-            envname=material,
-            suffix=suffix
-        )
-        keys = ("Seed", "Rank", "Name",
-                "Boss", "Type", "Floors",
-                "Monster Rank", "Chests (S - I)")
+
+        try:
+            prefix, envname, suffix = self.get_data_by(
+                prefix=prefix,
+                envname=material,
+                suffix=suffix
+            )
+        except ValueError as error:
+            tb = traceback.format_exception(
+                type(error),
+                error,
+                error.__traceback__
+            )
+            last = tb[-1]
+            match = re.match(r".+: ('\w+') is not in list", last)
+
+            if match is not None:
+                attribute = match.groups()[0]
+                replaced = attribute.replace("'", "\"")
+                return await ctx.send(f"{replaced} is not valid.")
 
         params = {
             "prefix": prefix,
@@ -245,9 +261,9 @@ class DragonQuest9Cog(commands.Cog, name="Dragon Quest 9"):
                         if self._is_special(parsed):
                             message += f"{emojis.STAR} **Special**\n"
                             parsed = parsed[1:]
+                        zipped = zip(range(len(parsed)), self.keys, parsed)
 
-                        for i, key, value in zip(range(len(parsed)), keys,
-                                                 parsed):
+                        for i, key, value in zipped:
                             if key == "Chests (S - I)":
                                 value = (", ").join(map(str, parsed[i:i+10]))
                             message += (f"**{key}**: `{value}`\n")
