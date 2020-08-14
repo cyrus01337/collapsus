@@ -1,8 +1,7 @@
-"""Discord bot base"""
-# import asyncio
 import os
 
 import discord
+import ujson
 from discord.ext import commands
 
 import _token
@@ -24,6 +23,7 @@ class GrottoBot(commands.Bot):
         self.received_love = False
         self.invite = None
         self.channel = None
+        self.settings = ujson.load("./resources/settings.json")
         # wow this looks like json
         self.reminders = {
             "todo": {
