@@ -19,11 +19,12 @@ class GrottoBot(commands.Bot):
         self.owner_ids = Owner.all()
 
         self.commands_run = 0
+        self.settings_path = "./resources/settings.json"
         self.is_online = False
         self.received_love = False
         self.invite = None
         self.channel = None
-        self.settings = ujson.load("./resources/settings.json")
+        self.settings = ujson.load(open(self.settings_path, "r"))
         # wow this looks like json
         self.reminders = {
             "todo": {
@@ -108,6 +109,12 @@ class GrottoBot(commands.Bot):
             if name.endswith(".py"):
                 ret.append(name[:-3])
         return ret
+
+    def set_prefix(self, prefix: str):
+        self.settings["prefix"] = prefix
+
+        with open(self.settings_path) as f:
+            ujson.dump(f, self.settings)
 
     async def alert(self, status: Status):
         message = f"I'm {str.lower(status.name)}"
