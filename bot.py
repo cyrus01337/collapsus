@@ -67,6 +67,7 @@ class GrottoBot(commands.Bot):
 
         for file in self.get_cog_filenames():
             self.load_extension(f"cogs.{file}")
+        self.load_extension("jishaku")
 
         self.loop.create_task(self.setup())
         self.loop.create_task(self.init_display())
