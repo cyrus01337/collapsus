@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 
 import database
-import prefix
+# import prefix
 # import quotes
 from constants import IGNORED_ERRORS
 
@@ -43,6 +43,8 @@ class ErrorHandlerCog(commands.Cog):
                            f"browser")
             else:
                 message = error
+        elif isinstance(error, commands.MissingRequiredArgument):
+            message = f"`{error.param} is a required argument that is missing"
         else:
             message = error
 
