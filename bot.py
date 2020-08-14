@@ -1,7 +1,7 @@
+import json
 import os
 
 import discord
-import ujson
 from discord.ext import commands
 
 import _token
@@ -24,7 +24,6 @@ class GrottoBot(commands.Bot):
         self.received_love = False
         self.invite = None
         self.channel = None
-        self.settings = ujson.load(open(self.settings_path, "r"))
         # wow this looks like json
         self.reminders = {
             "idea": {
@@ -51,6 +50,7 @@ class GrottoBot(commands.Bot):
             read_message_history=True,
             add_reactions=True
         )
+        self.settings = json.load(open(self.settings_path, "r"))
 
         for file in self.get_cog_filenames():
             self.load_extension(f"cogs.{file}")
