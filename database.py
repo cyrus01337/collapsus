@@ -18,7 +18,7 @@ class Database(object):
         0,  # uses
     )
 
-    def __init__(self, connection, loop):
+    def __init__(self, connection):
         self._connection = connection
 
     @classmethod
@@ -45,9 +45,9 @@ class Database(object):
         """)
 
         await connection.commit()
-        return cls(connection, loop)
+        return cls(connection)
 
-    # helper coroutines
+    # helper methods
     async def owned_by(self, name, author_id):
         await self.get("quote", name=name)  # errors if entry doesn't exist
         query = "SELECT * FROM quotes WHERE name=? AND author_id=?;"
