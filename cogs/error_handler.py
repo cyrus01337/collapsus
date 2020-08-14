@@ -47,19 +47,20 @@ class ErrorHandlerCog(commands.Cog):
             message = error
 
         try:
-            formatted = traceback.format_exception(type(error), error,
-                                                   error.__traceback__)
-            tb = ("").join(formatted)
-            message = (f"```py\n"
-                       f"{tb}\n"
-                       f"```")
+            if not isinstance(message, str):
+                formatted = traceback.format_exception(type(error), error,
+                                                       error.__traceback__)
+                tb = ("").join(formatted)
+                message = (f"```py\n"
+                           f"{tb}\n"
+                           f"```")
 
-            # prepend linebreak to improve error message readability
-            print()
             await ctx.send(message)
         except discord.Forbidden:
             pass
         finally:
+            # prepend linebreak to improve error message readability
+            print()
             raise error
 
 
