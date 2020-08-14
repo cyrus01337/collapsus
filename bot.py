@@ -19,6 +19,7 @@ class GrottoBot(commands.Bot):
                          **prefix.as_kwarg())
         self.owner_ids = Owner.all()
 
+        self.commands_run = 0
         self.is_online = False
         self.received_love = False
         self.invite = None
@@ -176,6 +177,15 @@ class GrottoBot(commands.Bot):
                   message.author.id in self.owner_ids, ctx is not None)):
             await utils.react_with(ctx, emojis.HEART)
         await self.process_commands(message)
+
+    async def on_command(self, ctx):
+        self.commands_run += 1
+
+        if self.commands_run == 25:
+            self.commands_run = 0
+
+            await ctx.send("If any bugs appear, feel free to notify my creator "
+                           "Cyrus, who's in this server. 😊")
 
 
 if __name__ == '__main__':
