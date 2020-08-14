@@ -41,7 +41,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
 
     @flags.add_flag("name", nargs="*")
     @flags.add_flag("--raw", action="store_true")
-    @flags.group(aliases=["q"], usage=f"{ctx.prefix}quote test",
+    @flags.group(aliases=["q"], usage="quote test",
                  invoke_without_command=True)
     async def quote(self, ctx, **flags):
         """
@@ -63,8 +63,8 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         await ctx.send(message)
 
     @quote.command(name="add",
-                   usage=f'{ctx.prefix}quote add BQ BQ stands for...\n'
-                         f'{ctx.prefix}quote add "what is mks" They...')
+                   usage='quote add BQ BQ stands for...\n'
+                         'quote add "what is mks" They...')
     async def quote_add(self, ctx, name, *, quote):
         """
         Create a quote to reference later
@@ -79,7 +79,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         await ctx.send(message)
 
     @quote.command(name="edit", aliases=["modify"],
-                   usage=f"{ctx.prefix}quote edit test WIP")
+                   usage="quote edit test WIP")
     async def quote_edit(self, ctx, name, *, quote):
         """
         Make changes to an existing quote you've made
@@ -88,7 +88,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         await ctx.send(f'Edited "{name}"')
 
     @quote.command(name="remove", aliases=["delete"],
-                   usage=f"{ctx.prefix}quote remove test")
+                   usage="quote remove test")
     async def quote_remove(self, ctx, *, name):
         """
         Delete an owned quote
@@ -105,8 +105,8 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         await ctx.send(f'Removed quote "{name}"')
 
     @quote.command(name="list",
-                   usage=f"{ctx.prefix}quote list\n"
-                         f"{ctx.prefix}quote list @Gradis#6666")
+                   usage="quote list\n"
+                         "quote list @Gradis#6666")
     async def quote_list(self, ctx, member: discord.Member = None):
         """
         Display all quotes created by the member given (defaults to you
@@ -127,8 +127,8 @@ class QuotesCog(commands.Cog, name="Quotes System"):
             await menu.start(ctx)
 
     @quote.command(name="alias",
-                   usage=f'{ctx.prefix}quote alias test test1\n'
-                         f'{ctx.prefix}quote alias "what is mks" mks')
+                   usage='quote alias test test1\n'
+                         'quote alias "what is mks" mks')
     async def quote_alias(self, ctx, name, *, alias):
         """
         Set a nickname for a quote to be referenced by (multiple can be
@@ -138,7 +138,7 @@ class QuotesCog(commands.Cog, name="Quotes System"):
         await ctx.send(f'Added alias "{alias}" to "{name}"')
 
     @quote.command(name="info", aliases=["resolve"],
-                   usage=f"{ctx.prefix}quote info what is mks")
+                   usage="quote info what is mks")
     async def quote_info(self, ctx, name):
         """
         Display quote information, such as the owner of the quote and
@@ -163,8 +163,8 @@ class QuotesCog(commands.Cog, name="Quotes System"):
                        f"**Aliases:** {aliases}")
 
     @quote.command(name="blacklist", aliases=["bl", "ban"],
-                   usage=f"{ctx.prefix}quote blacklist @Gradis#6666\n"
-                         f"{ctx.prefix}quote blacklist 263694336040894465")
+                   usage="quote blacklist @Gradis#6666\n"
+                         "quote blacklist 263694336040894465")
     @commands.check_any(commands.has_guild_permissions(administrator=True),
                         commands.has_guild_permissions(manage_guild=True),
                         commands.has_guild_permissions(manage_messages=True))
