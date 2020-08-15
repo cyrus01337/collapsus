@@ -106,7 +106,7 @@ class GrottoBot(commands.Bot):
         self.settings["prefix"] = prefix
 
         with open(self.settings_path) as f:
-            ujson.dump(f, self.settings)
+            json.dump(f, self.settings)
 
     async def alert(self, status: Status):
         message = f"I'm {str.lower(status.name)}"
