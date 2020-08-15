@@ -6,16 +6,16 @@ from discord.ext import commands
 
 import _token
 import emojis
-import prefix
 import utils
 from constants import Owner
 from constants import Status
+from prefix import get_prefix
 
 
 class GrottoBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(case_insensitive=True, reconnect=True,
-                         **prefix.as_kwarg())
+                         command_prefix=get_prefix)
         self.owner_ids = Owner.all()
 
         self.commands_run = 0
