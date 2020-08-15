@@ -24,6 +24,7 @@ class GrottoBot(commands.Bot):
         self.received_love = False
         self.invite = None
         self.channel = None
+        self.settings = {}
         # wow this looks like json
         self.reminders = {
             "idea": {
@@ -50,6 +51,11 @@ class GrottoBot(commands.Bot):
             read_message_history=True,
             add_reactions=True
         )
+
+        if os.path.exists(self.settings_path) is False:
+            with open(self.settings_path, "w") as f:
+                default = dict(prefix=".g")
+                json.dump(default, f)
         self.settings = json.load(open(self.settings_path, "r"))
 
         for file in self.get_cog_filenames():
@@ -79,8 +85,9 @@ class GrottoBot(commands.Bot):
 
     async def init_display(self):
         await self.wait_until_ready()
+        prefix = self.settings.get("prefix")
         activity = discord.Activity(type=discord.ActivityType.listening,
-                                    name=f"{prefix.DEFAULT} and pings!")
+                                    name=f"{prefix} and pings!")
 
         utils.clear_screen()
         print(self.user.name, end="\n\n")
