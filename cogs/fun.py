@@ -25,6 +25,9 @@ class Fun(commands.Cog):
             iterations = range(int(query_valid.group("amount")))
             sides = int(query_valid.group("sides"))
 
+            if 0 in (iterations, sides) or iteration > 20 or sides > 100:
+                return
+
             for _ in iterations:
                 rolls.append(random.randint(1, sides))
             joined = (" + ").join(map(str, rolls))
