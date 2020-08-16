@@ -36,6 +36,9 @@ class QuotesCog(commands.Cog, name="Quotes System"):
     async def cog_check(self, ctx):
         return not await self.db.in_blacklist(ctx.author.id)
 
+    async def on_close(self):
+        await self.db.close()
+
     def cog_unload(self):
         self.bot.loop.create_task(self.db.close())
 

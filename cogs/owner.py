@@ -36,6 +36,7 @@ class OwnerCog(commands.Cog, name="Owner Only",
     @flags.add_flag("--force", "-f", action="store_true")
     @flags.command()
     async def close(self, ctx, **flags):
+        self.bot.dispatch("close")
         await self.bot.close(forced_close=flags.get("force"))
 
 

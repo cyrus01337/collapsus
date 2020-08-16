@@ -154,6 +154,7 @@ class GrottoBot(commands.Bot):
 
         print(f"Closing {self.user.name}...")
         await self.alert(status=Status.DOWN)
+        
 
         if kwargs.get("forced_close", False):
             return await super(self.__class__, self).close()
