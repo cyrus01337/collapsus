@@ -27,7 +27,7 @@ class Fun(commands.Cog):
 
             for _ in iterations:
                 rolls.append(random.randint(1, sides))
-            joined = (" + ").join(map(int, rolls))
+            joined = (" + ").join(map(str, rolls))
             await ctx.send(f"`{joined}`\n\n"
 
                            f"**Result: {sum(rolls)}**")
