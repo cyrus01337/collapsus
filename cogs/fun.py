@@ -23,18 +23,15 @@ class Fun(commands.Cog):
         if query_valid:
             rolls = []
             amount = int(query_valid.group("amount"))
-            iterations = range(amount)
             sides = int(query_valid.group("sides"))
 
             if 0 in (amount, sides) or amount > 20 or sides > 100:
                 return
 
-            for _ in iterations:
+            for _ in range(amount):
                 rolls.append(random.randint(1, sides))
-            joined = (" + ").join(map(str, rolls))
-            await ctx.send(f"`{joined}`\n\n"
-
-                           f"**Result: {sum(rolls)}**")
+            await ctx.send(f"**Rolled a d{sides} {amount} time(s)\n"
+                           f"Result: `{sum(rolls)}`**")
 
 
 def setup(bot):
