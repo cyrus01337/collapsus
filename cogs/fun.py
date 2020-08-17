@@ -18,7 +18,7 @@ class Fun(commands.Cog):
         """Explanation"""
         await ctx.send(discord.utils.escape_mentions(anything))
 
-    @flags.add_command("--log", "-l", action="store_true")
+    @flags.add_flag("--log", "-l", action="store_true")
     @flags.command()
     async def roll(self, ctx, query, **flags):
         query_valid = self.roll_regex.fullmatch(query)
