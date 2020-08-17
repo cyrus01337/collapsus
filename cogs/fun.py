@@ -22,10 +22,11 @@ class Fun(commands.Cog):
 
         if query_valid:
             rolls = []
-            iterations = range(int(query_valid.group("amount")))
+            amount = int(query_valid.group("amount"))
+            iterations = range(amount)
             sides = int(query_valid.group("sides"))
 
-            if 0 in (iterations, sides) or iterations > 20 or sides > 100:
+            if 0 in (amount, sides) or amount > 20 or sides > 100:
                 return
 
             for _ in iterations:
