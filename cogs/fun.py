@@ -3,7 +3,9 @@ import random
 import re
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, flags
+
+import utils
 
 
 class Fun(commands.Cog):
@@ -16,8 +18,9 @@ class Fun(commands.Cog):
         """Explanation"""
         await ctx.send(discord.utils.escape_mentions(anything))
 
-    @commands.command()
-    async def roll(self, ctx, query):
+    @flags.add_command("--log", "-l", action="store_true")
+    @flags.command()
+    async def roll(self, ctx, query, **flags):
         query_valid = self.roll_regex.fullmatch(query)
 
         if query_valid:
@@ -30,8 +33,13 @@ class Fun(commands.Cog):
 
             for _ in range(amount):
                 rolls.append(random.randint(1, sides))
-            await ctx.send(f"**Rolled a d{sides} {amount} time(s)\n"
-                           f"Result: `{sum(rolls)}`**")
+            message = (f"**Rolled a d{sides} {amount} time(s)\n"
+                       f"Result: `{sum(rolls):,}`**\n")
+
+            if flags.get("log"):
+                mystbin = await utils.mystbin((" + ").join(map(str, rolls)))
+                message += f"<{mystbin}>"
+            await ctx.send(message)
 
 
 def setup(bot):
