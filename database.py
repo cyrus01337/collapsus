@@ -131,7 +131,7 @@ class Database(object):
 
     async def get(self, *args, **kwargs):
         get_all = kwargs.pop("all", False)
-        db_name = kwargs.pop("self._connection", "quotes")
+        db = kwargs.pop("db", "quotes")
         fallback = kwargs.pop("fallback", None)
         fallback_params = kwargs.pop("params", tuple())
         conditions = ""
@@ -143,7 +143,7 @@ class Database(object):
         if kwargs:
             conditions = "WHERE " + (" AND ").join(f"{k}=?" for k in kwargs)
         selecting = (", ").join(args)
-        query = f"SELECT {selecting} FROM {db_name} {str.strip(conditions)};"
+        query = f"SELECT {selecting} FROM {db} {str.strip(conditions)};"
         params = tuple(kwargs.values())
 
         async with self._connection.execute(query, params) as cursor:
