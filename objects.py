@@ -1,10 +1,16 @@
 import enum
-from collections import namedtuple
-from typing import Union
+from collections import namedtuple, OrderedDict
 
 from discord.ext import commands
 
 Parameter = namedtuple("Parameter", "name value")
+_NAMES = {
+    "material": "envname",
+    "location": "loc",
+    "hl": "clev",
+    "revocation": "rev",
+    "hgl": "glev"
+}
 
 
 class Threshold:
@@ -15,6 +21,18 @@ class Threshold:
 
     def is_hex(self):
         return self._hex
+
+
+class Parameter:
+    def __init__(self, name: str, value: int):
+        self.name = name
+        self.value = value
+
+    def __repr__(self):
+        return (f"<Parameter name={self.name} value={self.value}>")
+
+    def to_dict(self):
+        return {self.name: self.value}
 
 
 class Flags(enum.Enum):
@@ -36,7 +54,7 @@ class Flags(enum.Enum):
         "sapphire",
         "diamond"
     ]
-    ENVNAME = [
+    MATERIAL = [
         "cave",
         "tunnel",
         "mine",
@@ -88,7 +106,7 @@ class Flags(enum.Enum):
         "water",
         "fire"
     ]
-    LOC = Threshold(min=1, max=150, hex=True)
+    LOCATION = Threshold(min=1, max=150, hex=True)
     BOSS = [
         "equinox",
         "nemean",
@@ -103,23 +121,19 @@ class Flags(enum.Enum):
         "tyrannosaurus wrecks",
         "greygnarl"
     ]
-    CLEV = Threshold(min=1, max=99)
-    REV = Threshold(min=0, max=10)
-    GLEV = Threshold(min=0, max=99)
-
-    @classmethod
-    def _resolve_name(cls, name: str):
-        pass
+    HL = Threshold(min=1, max=99)
+    REVOCATION = Threshold(min=0, max=10)
+    HGL = Threshold(min=0, max=99)
 
     def converter(self, argument):
         argument = argument.lower()
         name = self.name.lower()
-        resolved = self._resolve_name(name)
+        resolved = _NAMES.get(name, name)
 
         if isinstance(self.value, list):
             if argument not in self.value:
                 raise commands.BadArgument(f"{argument} is an invalid {name}")
-            return Parameter(resolved, self.value.index(argument))
+            return Parameter(resolved, self.value.index(argument) + 1)
         elif isinstance(self.value, Threshold):
             base = 10
 
@@ -131,3 +145,55 @@ class Flags(enum.Enum):
                 raise commands.BadArgument(f"{argument} is an invalid {name}")
             return Parameter(resolved, argument)
         raise commands.BadArgument(f"invalid datatype passed: {argument}")
+
+
+class Grotto:
+    def __init__(self, payload):
+        key = None
+        attrs = OrderedDict()
+        self._details = OrderedDict()
+
+        for element in payload:
+            data = str.strip(element.get())
+
+            if not data:
+                continue
+
+            if data.endswith(":"):
+                default = ""
+                key = data.rstrip(":")
+
+                if len(key) > 1:
+                    key = key.lower()
+
+                if key == "Locations":
+                    default = []
+                attrs[key] = default
+            else:
+                value = attrs[key]
+                append = f" {data}"
+
+                if isinstance(value, list):
+                    append = [data]
+                attrs[key] += append
+
+        self._details = attrs.copy()
+
+        for key, value in attrs.items():
+            if isinstance(value, str):
+                self._details[key] = value.lstrip()
+
+        self._setup_attribs()
+
+    def __repr__(self):
+        joined = (" ").join(f"{k}={v!r}" for k, v in self._details.items())
+
+        return f"<Grotto {joined}>"
+
+    @property
+    def details(self):
+        return self._details.items()
+
+    def _setup_attribs(self):
+        for attr, value in self.details:
+            setattr(self, attr, value)
