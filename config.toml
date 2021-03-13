@@ -1,2 +1,6 @@
 [bot]
 prefix = ".t"
+
+[database]
+user = "postgres"
+password = "root"

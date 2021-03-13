@@ -1,3 +1,5 @@
 discord.py
 parsel
 asyncpg
+jishaku
+toml

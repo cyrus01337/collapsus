@@ -1,14 +1,19 @@
 import re
 
 import discord
+import toml
 
+import database
 from base import custom
 
 
 class Bot(custom.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        with open("config.toml", "r") as f:
+            config = toml.load(f)
         self.unwanted = re.compile("of", flags=re.I)
+        self.db = database.create(config)
 
         self.load_base_extensions(exclude=["error_handler.py"])
         self.load_extensions("cogs/")
