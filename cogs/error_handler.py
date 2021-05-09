@@ -12,7 +12,6 @@ class ErrorHandler(commands.Cog):
         error = getattr(error, "original", error)
 
         if isinstance(error, commands.BadArgument):
-            # return await ctx.send_help(ctx.command)
             await ctx.send(error)
         traceback.print_exception(type(error), error, error.__traceback__)
 
