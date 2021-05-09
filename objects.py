@@ -1,19 +1,21 @@
 import enum
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
+from typing import Optional
 
 from discord.ext import commands
 
-Parameter = namedtuple("Parameter", "name value")
 _NAMES = {
     "material": "envname",
     "location": "loc",
-    "hl": "clev",
-    "revocation": "rev",
-    "hgl": "glev"
+    "max_level": "clev",
+    "max_revocations": "rev",
+    "last_grotto_level": "glev"
 }
 
 
 class Threshold:
+    __slots__ = ("_hex", "min", "max")
+
     def __init__(self, *, min: int, max: int, hex: bool = False):
         self._hex = hex
         self.min = min
@@ -24,6 +26,8 @@ class Threshold:
 
 
 class Parameter:
+    __slots__ = ("name", "value")
+
     def __init__(self, name: str, value: int):
         self.name = name
         self.value = value
@@ -121,9 +125,13 @@ class Flags(enum.Enum):
         "tyrannosaurus wrecks",
         "greygnarl"
     ]
-    HL = Threshold(min=1, max=99)
-    REVOCATION = Threshold(min=0, max=10)
-    HGL = Threshold(min=0, max=99)
+    MAX_LEVEL = Threshold(min=1, max=99)
+    MAX_REVOCATION = Threshold(min=0, max=10)
+    LAST_GROTTO_LEVEL = Threshold(min=0, max=99)
+
+    @property
+    def optional(self):
+        return Optional[self.converter]
 
     def converter(self, argument):
         argument = argument.lower()
@@ -149,9 +157,22 @@ class Flags(enum.Enum):
 
 class Grotto:
     def __init__(self, payload):
-        key = None
+        self.details = OrderedDict()
+
+        self._do_parsing(payload)
+
+        # im sorry im a lazy shit
+        for attr, value in self.details.items():
+            setattr(self, attr, value)
+
+    def __repr__(self):
+        joined = (" ").join(f"{k}={v!r}" for k, v in self.details.items())
+
+        return f"<Grotto {joined}>"
+
+    def _do_parsing(self, payload):
+        key = ""
         attrs = OrderedDict()
-        self._details = OrderedDict()
 
         for element in payload:
             data = str.strip(element.get())
@@ -160,40 +181,45 @@ class Grotto:
                 continue
 
             if data.endswith(":"):
+                # found a title which acts as a key
                 default = ""
-                key = data.rstrip(":")
+                key = data[:-1]
 
                 if len(key) > 1:
                     key = key.lower()
 
+                # variable locations - list used to simplify tracking +
+                # additions to
                 if key == "Locations":
                     default = []
                 attrs[key] = default
             else:
+                # found a value - the current key determines whether the
+                # value is set/appended
                 value = attrs[key]
                 append = f" {data}"
 
-                if isinstance(value, list):
+                # special-case insertion to make checking for special
+                # floors easier
+                if data == "Has a special floor":
+                    attrs["special"] = True
+
+                    continue
+                elif isinstance(value, list):
                     append = [data]
                 attrs[key] += append
 
-        self._details = attrs.copy()
+        attrs.setdefault("special", False)
 
         for key, value in attrs.items():
+            container = self.details
+
+            # the key can be a chest type (A, B, etc.) which are stored
+            # similarly to locations - OrderedDicts also ensure the
+            # order of additions
+            if len(key) == 1:
+                container = self.details.setdefault("chests", OrderedDict())
+
             if isinstance(value, str):
-                self._details[key] = value.lstrip()
-
-        self._setup_attribs()
-
-    def __repr__(self):
-        joined = (" ").join(f"{k}={v!r}" for k, v in self._details.items())
-
-        return f"<Grotto {joined}>"
-
-    @property
-    def details(self):
-        return self._details.items()
-
-    def _setup_attribs(self):
-        for attr, value in self.details:
-            setattr(self, attr, value)
+                value = value.lstrip()
+            container[key] = value
