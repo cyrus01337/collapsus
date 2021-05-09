@@ -1,5 +1,5 @@
 [bot]
-prefix = ".t"
+prefix = ".g"
 
 [database]
 user = "postgres"

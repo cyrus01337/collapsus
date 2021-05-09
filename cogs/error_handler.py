@@ -2,6 +2,8 @@ import traceback
 
 from discord.ext import commands
 
+from errors import CollapsusError
+
 
 class ErrorHandler(commands.Cog):
     def __init__(self, bot):
@@ -11,9 +13,10 @@ class ErrorHandler(commands.Cog):
     async def on_command_error(self, ctx, error):
         error = getattr(error, "original", error)
 
-        if isinstance(error, commands.BadArgument):
+        if isinstance(error, (commands.BadArgument, CollapsusError)):
             await ctx.send(error)
-        traceback.print_exception(type(error), error, error.__traceback__)
+        else:
+            traceback.print_exception(type(error), error, error.__traceback__)
 
 
 def setup(bot):

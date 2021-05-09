@@ -1,6 +1,5 @@
-discord.py
-parsel
 asyncpg
+discord.py
 jishaku
+parsel
 toml
-scikit-image

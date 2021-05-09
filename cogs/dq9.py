@@ -100,7 +100,6 @@ class DragonQuest9(custom.Cog):
             desc = payload.pop("desc")
 
             if embed:
-                print(payload)
                 payload["\n**Link**"] = f"[Link]({link})"
                 fields = [custom.Field(n, v) for n, v in payload.items()]
                 # image = self._generate_locations_image()

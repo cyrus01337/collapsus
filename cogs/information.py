@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 
 from discord.ext import commands
@@ -18,9 +19,18 @@ class Information(custom.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_check(self, ctx):
-        return checks.require_settings(ctx)
+    @commands.command()
+    async def ping(self, ctx):
+        start = time.perf_counter()
 
+        await ctx.message.add_reaction("🏓")
+
+        end = time.perf_counter()
+        latency = (end - start) * 1000
+
+        await ctx.send(f"🏓 **Pong!** {latency:,.1f}ms.")
+
+    @commands.check(checks.require_settings)
     @commands.group(aliases=["setting"], invoke_without_command=True)
     async def settings(self,
                        ctx,

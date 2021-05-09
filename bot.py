@@ -23,6 +23,11 @@ class Bot(custom.Bot):
         self.load_base_extensions(exclude=["error_handler.py"])
         self.load_extensions("cogs/")
 
+    async def alias_to(self, name, ctx, *args, **kwargs):
+        command = self.get_command(name)
+
+        await command(ctx, *args, **kwargs)
+
     async def on_message(self, message):
         ctx = await self.get_context(message)
 
