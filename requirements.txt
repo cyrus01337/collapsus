@@ -3,3 +3,4 @@ parsel
 asyncpg
 jishaku
 toml
+scikit-image
