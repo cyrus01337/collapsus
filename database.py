@@ -1,23 +1,43 @@
 import asyncio
 import functools
+from collections import OrderedDict
+from typing import Dict
 
 import asyncpg
 from asyncpg.pool import Pool
 
 
 class Database:
+    __slots__ = ("config", "pool", "loop", "settings")
+    VALID_SETTINGS = ("embed",)
+
     class Settings:
-        VALID = ("embed",)
+        __slots__ = ("embed", "settings")
 
         def __init__(self, **attrs):
-            self.embed = attrs.pop("embed")
+            self.embed = attrs.pop("embed", False)
 
-            self.values = [self.embed]
+            self.settings = OrderedDict(embed=self.embed)
+
+        def __iter__(self):
+            return iter(self.settings.items())
 
         def __repr__(self):
-            formatting = "<Settings embed={self.embed}>"
+            attrs = (" ").join(f"{k}={v}" for k, v in self)
 
-            return formatting.format(self)
+            return f"<Settings {attrs}>"
+
+        def __getitem__(self, key):
+            return self.settings[key]
+
+        def __setitem__(self, key, value):
+            self.settings[key] = value
+
+            setattr(self, key, value)
+
+        @property
+        def values(self):
+            return list(self.settings.values())
 
     def connect(coro):
         @functools.wraps(coro)
@@ -33,11 +53,11 @@ class Database:
 
         self.pool: Pool = None
         self.loop = asyncio.get_event_loop()
+        self.settings: Dict[int, self.Settings] = None
 
         self.loop.create_task(self.__ainit__())
 
     async def __ainit__(self):
-        self.members = set()
         self.settings = {}
         self.pool = await asyncpg.create_pool(**self.config)
 
@@ -45,46 +65,47 @@ class Database:
             await conn.execute("""
                 CREATE SCHEMA IF NOT EXISTS collapsus;
 
-                CREATE TABLE IF NOT EXISTS collapsus.members(
-                    id SERIAL PRIMARY KEY,
-                    member_id BIGINT UNIQUE NOT NULL
-                );
-
                 CREATE TABLE IF NOT EXISTS collapsus.settings(
-                    id SERIAL PRIMARY KEY,
-                    member_id BIGINT NOT NULL,
+                    id SERIAL PRIMARY KEY UNIQUE,
+                    member_id BIGINT UNIQUE NOT NULL,
                     embed BOOLEAN DEFAULT FALSE
                 );
             """)
 
             await self._init_cache(conn)
 
+    def _wrap_params(self, params):
+        return [[p] for p in params]
+
     async def _init_cache(self, conn):
-        members = await conn.fetch("SELECT member_id FROM collapsus.members;")
         settings = await conn.fetch("SELECT * FROM collapsus.settings;")
 
-        self.members = set(members)
-
         for _, member_id, embed in settings:
-            self.settings[member_id] = self.Settings(embed=embed)
+            self.settings[member_id] = self.create_settings(embed=embed)
+
+    def create_settings(self, **kwargs):
+        return self.Settings(**kwargs)
 
     @connect
     async def eval(self, conn, query: str, *args):
         return await conn.fetch(query, *args)
 
     async def close(self):
-        keys = list(self.settings.keys())
-        statements = {
-            "INSERT member_id INTO dq9.members VALUES ($1);": keys,
-            "INSERT member_id, embed INTO dq9.settings VALUES ($1, $2);": zip(
-                keys,
-                [s.values for s in self.settings.values()]
-            )
-        }
+        statement = """
+            INSERT INTO collapsus.settings (member_id, embed)
+            VALUES ($1, $2)
+            ON CONFLICT (member_id) DO
+            UPDATE SET embed = EXCLUDED.embed;
+        """
+        values = []
+
+        for key, settings in self.settings.items():
+            append = [key, *settings.values]
+
+            values.append(append)
 
         async with self.pool.acquire() as conn:
-            for statement, values in statements.items():
-                await conn.executemany(statement, values)
+            await conn.executemany(statement, values)
         await self.pool.close()
 
 

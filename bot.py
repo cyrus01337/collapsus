@@ -10,21 +10,29 @@ from base import custom
 class Bot(custom.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         with open("config.toml", "r") as f:
             config = toml.load(f)
-        self.unwanted = re.compile("of", flags=re.I)
+
+        skip = (r"of", r"\ble?v(el)?\.?")
+        pattern = (r"|").join(skip)
+
+        self.unwanted = re.compile(pattern, flags=re.I)
         self.db = database.create(config)
 
         self.load_base_extensions(exclude=["error_handler.py"])
         self.load_extensions("cogs/")
 
     async def on_message(self, message):
-        unwanted_found = self.unwanted.search(message.content)
         ctx = await self.get_context(message)
 
-        if unwanted_found and ctx.valid and ctx.command.name == "grotto":
+        if ctx.valid and ctx.command.name == "grotto":
             message.content = self.unwanted.sub("", message.content)
         await super().on_message(message)
+
+    async def close(self):
+        await self.db.close()
+        await super().close()
 
 
 def main():
