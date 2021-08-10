@@ -3,7 +3,6 @@ from typing import Dict, List, Union
 
 import discord
 import parsel
-import skimage
 import yarl
 from discord.ext import commands, menus
 from jishaku.functools import executor_function
