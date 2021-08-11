@@ -1,7 +1,7 @@
 import asyncio
 import functools
 from collections import OrderedDict
-from typing import Dict
+from typing import Coroutine, Dict
 
 import asyncpg
 from asyncpg.pool import Pool
@@ -78,10 +78,9 @@ class Database:
                 );
 
                 CREATE TABLE IF NOT EXISTS collapsus.quotes(
-                    message_id BIGINT PRIMARY KEY UNIQUE,
-                    author_id BIGINT NOT NULL,
-                    name TEXT UNIQUE NOT NULL,
-                    content TEXT NOT NULL
+                    name TEXT PRIMARY KEY UNIQUE NOT NULL,
+                    content TEXT NOT NULL,
+                    author_id BIGINT NOT NULL
                 );
             """)
 
@@ -123,14 +122,14 @@ class Database:
         return await conn.fetch(query, author_id)
 
     @connect
-    async def add_quote(self, conn, message_id, author_id, name, content):
+    async def add_quote(self, conn, name, content, author_id):
         query = """
-            INSERT INTO collapsus.quotes(message_id, author_id, name, content)
-            VALUES($1, $2, $3, $4)
+            INSERT INTO collapsus.quotes(name, content, author_id)
+            VALUES($1, $2, $3)
             ON CONFLICT (name) DO NOTHING;
         """
 
-        await conn.execute(query, message_id, author_id, name, content)
+        await conn.execute(query, name, content, author_id)
 
     @connect
     async def owns_quote(self, conn, author_id, name):
