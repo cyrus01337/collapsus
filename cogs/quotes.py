@@ -30,10 +30,9 @@ class Quotes(custom.Cog):
             raise QuoteException(f'Quote "{name}" already exists')
 
         await self.bot.db.add_quote(
-            ctx.message.id,
-            ctx.author.id,
             name,
-            content
+            content,
+            ctx.author.id
         )
         await ctx.send(f'Successfully created quote "{name}"')
 
