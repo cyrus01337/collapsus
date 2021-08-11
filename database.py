@@ -1,7 +1,7 @@
 import asyncio
 import functools
 from collections import OrderedDict
-from typing import Dict
+from typing import Coroutine, Dict
 
 import asyncpg
 from asyncpg.pool import Pool
