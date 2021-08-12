@@ -1,5 +1,5 @@
 [bot]
-prefix = ".g"
+prefix = ".t"
 
 [database]
 user = "cyrus"

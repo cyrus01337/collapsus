@@ -1,3 +1,5 @@
+import json
+import random
 from collections import OrderedDict
 from typing import Dict, List, Union
 
@@ -29,19 +31,35 @@ class DragonQuest9(custom.Cog):
             "chest": "IHGFEDCBAS",
             "grotto": "KJIHGFEDCBAS"
         }
+        self.characteristics = {
+            "gender": ["Male", "Female"],
+            "hair_colour": [
+                "Dark Brown",
+                "Light Brown",
+                "Red",
+                "Pink",
+                "Yellow",
+                "Green",
+                "Blue",
+                "Purple",
+                "Light Blue",
+                "Grey"
+            ],
+            "eye_colour": [
+                "Black",
+                "Brown",
+                "Red",
+                "Yellow",
+                "Green",
+                "Blue",
+                "Purple",
+                "Grey"
+            ]
+        }
+        self.random_character = ""
 
-    @executor_function
-    def _generate_grottos(self, text: str):
-        grottos = []
-        selector = parsel.Selector(text=text)
-        grotto_divs = selector.css(".inner")
-
-        for div in grotto_divs:
-            payload = div.css("::text")
-            grotto = Grotto(payload)
-
-            grottos.append(grotto)
-        return grottos
+        with open("assets/names.json") as fh:
+            self.characteristics["name"] = json.load(fh)
 
     def _create_entries(self,
                         ctx: commands.Context,
@@ -121,6 +139,31 @@ class DragonQuest9(custom.Cog):
             timeout=90.0,
             clear_reactions_after=True
         )
+
+    def _generate_random_character(self):
+        return OrderedDict(
+            gender=random.choice(self.characteristics["gender"]),
+            body_type=random.randint(1, 5),
+            hairstyle=random.randint(1, 10),
+            hair_colour=random.choice(self.characteristics["hair_colour"]),
+            face=random.randint(1, 10),
+            skin_colour=random.randint(1, 8),
+            eye_colour=random.choice(self.characteristics["eye_colour"]),
+            name=random.choice(self.characteristics["name"])
+        )
+
+    @executor_function
+    def _generate_grottos(self, text: str):
+        grottos = []
+        selector = parsel.Selector(text=text)
+        grotto_divs = selector.css(".inner")
+
+        for div in grotto_divs:
+            payload = div.css("::text")
+            grotto = Grotto(payload)
+
+            grottos.append(grotto)
+        return grottos
 
     @commands.command()
     async def resolve(self,
@@ -214,6 +257,23 @@ class DragonQuest9(custom.Cog):
         paginator = self._get_paginator(entries)
 
         await paginator.start(ctx)
+
+    @commands.command(name="random")
+    async def _random(self, ctx):
+        characteristics = self._generate_random_character()
+
+        if not self.random_character:
+            self.random_character = "\n".join(
+                "**{name}**: {prefix}{{{key}}}".format(
+                    name=key.replace("_", " ").title(),
+                    prefix="Type " if isinstance(value, int) else "",
+                    key=key
+                )
+                for key, value in characteristics.items()
+            )
+        content = self.random_character.format(**characteristics)
+
+        await ctx.send(content)
 
 
 def setup(bot):
