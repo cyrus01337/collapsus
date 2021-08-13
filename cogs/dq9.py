@@ -247,7 +247,11 @@ class DragonQuest9(custom.Cog):
                 text = await response.text(encoding="UTF-8")
                 grottos = await self._generate_grottos(text)
 
+                if not grottos:
+                    return await ctx.send("That grotto doesn't exist")
+
                 self.cache[URL] = grottos
+
         entries = self._create_entries(
             ctx,
             grottos,
