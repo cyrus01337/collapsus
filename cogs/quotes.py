@@ -76,6 +76,7 @@ class Quotes(custom.Cog):
         is_owner = await self.bot.db.owns_quote(ctx.author.id, name)
         is_privileged = await self.is_privileged(ctx)
 
+        print(is_owner, is_privileged, not (is_owner or is_privileged))
         if not (is_owner or is_privileged):
             raise QuoteException("You do not own this quote!")
         await self.bot.db.remove_quote(name)
