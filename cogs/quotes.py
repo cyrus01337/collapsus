@@ -64,7 +64,7 @@ class Quotes(custom.Cog):
     @quote.command(name="update")
     async def quote_update(self, ctx, name, *, content):
         is_owner = await self.bot.db.owns_quote(ctx.author.id, name)
-        is_privileged = await self.is_privileged(ctx)
+        is_privileged = self.is_privileged(ctx)
 
         if not (is_owner or is_privileged):
             raise QuoteException("You do not own this quote!")
@@ -74,9 +74,8 @@ class Quotes(custom.Cog):
     @quote.command(name="remove")
     async def quote_remove(self, ctx, *, name):
         is_owner = await self.bot.db.owns_quote(ctx.author.id, name)
-        is_privileged = await self.is_privileged(ctx)
+        is_privileged = self.is_privileged(ctx)
 
-        print(is_owner, is_privileged, not (is_owner or is_privileged))
         if not (is_owner or is_privileged):
             raise QuoteException("You do not own this quote!")
         await self.bot.db.remove_quote(name)
