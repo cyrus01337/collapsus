@@ -1,27 +1,32 @@
+import json
+import pathlib
 import re
 
 import discord
-import toml
+from discord.ext import commands
 
 import database
-from base import custom
+
+CONFIG = {}
+
+with open("config.json") as fh:
+    CONFIG = json.load(fh)
 
 
-class Bot(custom.Bot):
+class Bot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        with open("config.toml", "r") as f:
-            config = toml.load(f)
-
+        CWD = pathlib.Path.cwd()
         skip = (r"of", r"\ble?v(el)?\.?")
         pattern = (r"|").join(skip)
 
+        self.started = False
         self.unwanted = re.compile(pattern, flags=re.I)
-        self.db = database.create(config)
+        self.db = database.create()
 
-        self.load_base_extensions(exclude=["error_handler.py"])
-        self.load_extensions("cogs/")
+        for obj in CWD.glob("./cogs/*.py"):
+            self.load_extension(f"cogs.{obj.stem}")
 
     async def alias_to(self, name, ctx, *args, **kwargs):
         command = self.get_command(name)
@@ -35,6 +40,16 @@ class Bot(custom.Bot):
             message.content = self.unwanted.sub("", message.content)
         await super().on_message(message)
 
+    async def on_ready(self):
+        if self.started:
+            return
+        self.started = True
+
+        print(self.user.name, end="\n\n")
+
+    def run(self):
+        super().run(CONFIG["token"])
+
     async def close(self):
         await self.db.close()
         await super().close()
@@ -42,9 +57,11 @@ class Bot(custom.Bot):
 
 def main():
     bot = Bot(
-        owner_ids={668906205799907348, 263694336040894465},
-        allowed_mentions=discord.AllowedMentions.none()
+        allowed_mentions=discord.AllowedMentions.none(),
+        command_prefix=commands.when_mentioned_or(".t"),
+        owner_ids={668906205799907348, 263694336040894465}
     )
+
     bot.run()
 
 

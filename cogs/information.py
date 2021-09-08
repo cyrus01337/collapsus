@@ -4,10 +4,10 @@ from typing import Optional
 from discord.ext import commands
 
 import checks
-from base import custom
+import objects
 
 
-class Information(custom.Cog):
+class Information(commands.Cog):
     class Setting(commands.Converter):
         async def convert(self, ctx, argument):
             argument = argument.lower()
@@ -40,7 +40,7 @@ class Information(custom.Cog):
 
         if not setting and not value:
             settings_found = self.bot.db.settings[ctx.author.id]
-            embed = custom.Embed(title="Settings", desc=str(ctx.author))
+            embed = objects.Embed(title="Settings", desc=str(ctx.author))
 
             for name, value in settings_found:
                 name = name.title()

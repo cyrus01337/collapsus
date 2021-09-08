@@ -5,10 +5,8 @@ import discord
 from discord.ext import commands
 from jishaku.functools import executor_function
 
-from base import custom
 
-
-class Fun(custom.Cog):
+class Fun(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

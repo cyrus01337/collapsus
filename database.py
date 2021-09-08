@@ -51,9 +51,7 @@ class Database:
                 return await coro(self, conn, *args, **params)
         return predicate
 
-    def __init__(self, config):
-        self.config = config.get("database", config)
-
+    def __init__(self):
         self.loop = asyncio.get_event_loop()
         self.ready_event = asyncio.Event()
         self.pool: Pool = None
@@ -63,8 +61,10 @@ class Database:
 
     async def __ainit__(self):
         self.pool = await asyncpg.create_pool(
-            record_class=self.DottedRecord,
-            **self.config
+            user="cyrus",
+            password="root",
+            database="bots",
+            record_class=self.DottedRecord
         )
 
         async with self.pool.acquire() as conn:

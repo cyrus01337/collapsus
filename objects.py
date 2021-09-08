@@ -2,6 +2,7 @@ import enum
 from collections import OrderedDict
 from typing import Optional
 
+import discord
 from discord.ext import commands
 
 _NAMES = {
@@ -223,3 +224,29 @@ class Grotto:
             if isinstance(value, str):
                 value = value.lstrip()
             container[key] = value
+
+
+class Field:
+    def __init__(self, name=None, value=None, inline=False):
+        self.name = name
+        self.value = value
+        self.inline = inline
+
+
+class Embed(discord.Embed):
+    def __init__(self, *args, **kwargs):
+        fields = kwargs.pop("fields", None)
+        desc_alias_found = kwargs.get("desc", None)
+
+        if desc_alias_found:
+            kwargs["description"] = desc_alias_found
+
+        super().__init__(*args, **kwargs)
+
+        if fields:
+            for field in fields:
+                self.add_field(
+                    name=field.name,
+                    value=field.value,
+                    inline=field.inline
+                )

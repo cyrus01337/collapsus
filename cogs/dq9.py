@@ -9,12 +9,11 @@ import yarl
 from discord.ext import commands, menus
 from jishaku.functools import executor_function
 
-from base import custom
 from checks import require_settings
 from objects import Flags, Grotto
 
 
-class DragonQuest9(custom.Cog):
+class DragonQuest9(commands.Cog):
     class Source(menus.ListPageSource):
         def __init__(self, entries: List[discord.Embed]):
             super().__init__(entries, per_page=1)
@@ -118,9 +117,9 @@ class DragonQuest9(custom.Cog):
 
             if embed:
                 payload["\n**Link**"] = f"[Link]({link})"
-                fields = [custom.Field(n, v) for n, v in payload.items()]
+                fields = [objects.Field(n, v) for n, v in payload.items()]
                 # image = self._generate_locations_image()
-                append = custom.Embed(title=title, desc=desc, fields=fields)
+                append = objects.Embed(title=title, desc=desc, fields=fields)
             else:
                 joined = ("\n").join(f"{k}: {v}" for k, v in payload.items())
                 append = (f"{title}\n"

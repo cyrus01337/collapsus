@@ -3,11 +3,10 @@ from typing import Optional
 import discord
 from discord.ext import commands
 
-from base import custom
 from errors import QuoteException
 
 
-class Quotes(custom.Cog):
+class Quotes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

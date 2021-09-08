@@ -1,7 +1,0 @@
-[bot]
-prefix = ".g"
-
-[database]
-user = "cyrus"
-password = "root"
-database = "bots"
