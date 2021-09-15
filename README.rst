@@ -1,7 +1,7 @@
 ========================
 DragonQuest 9 Grotto Bot
 ========================
-Created using Python 3.8.2 to fill the sole purpose of acting as a website "wrapper" around the `grotto search tool <https://www.yabd.org/apps/dq9/grottosearch.php>`_ by GameFAQs user `Yab. <https://gamefaqs.gamespot.com/community/yab>`_ (`Site <http://www.yabd.org>`_) The functionality of which is tucked into a convenient, server-unique Discord bot for `Dragon Quest IX: Fan Server. <https://discord.gg/NGZ6RKB>`_
+Created using Python 3.9.4 to fill the sole purpose of acting as a website "wrapper" around the `grotto search tool <https://www.yabd.org/apps/dq9/grottosearch.php>`_ by GameFAQs user `Yab. <https://gamefaqs.gamespot.com/community/yab>`_ (`Site <http://www.yabd.org>`_) The functionality of which is tucked into a convenient, server-unique Discord bot for `Dragon Quest IX: Fan Server. <https://discord.gg/NGZ6RKB>`_
 
 
 Differences Between Grotto Bot And Public Bots
@@ -18,7 +18,7 @@ That being said, for those with determined interests, below are the requirements
 
 Prerequisites
 -------------
-- Python 3.8.2+
+- Python 3.9.4+
 - `Git <https://git-scm.com/downloads>`_
 - Pip (should come pre-installed with default Python)
 
@@ -26,7 +26,7 @@ Note
 ~~~~
 These libraries are also included within this repository's ``requirements.txt`` for an easier installation
 
-- `Discord.py <https://pypi.org/project/discord.py/>`_ (Discord API wrapper, voice is not used) 1.3.3
+- `Discord.py <https://pypi.org/project/discord.py/>`_ (Discord API wrapper, voice is not used) 1.7.3
 - `Parsel <https://pypi.org/project/parsel/>`_ (HTML/XML parser) 1.6.0
 
 
@@ -37,8 +37,7 @@ Setup
     git clone https://github.com/cyrus01337/dq9-grotto-bot.git
     cd dq-grotto-bot
 
-    # For those using a virtualenv
-    # For Unix, use pip3
+    # For Unix - prefer pip3.9
     pip install -r requirements.txt
 
 Along with the repository you require an additional file named ``_token.py``, containing a synchronous function ``get()`` that returns your Discord bot token. The method used is subjective, however replacing this functionality to instead use coroutines requires manually editing ``bot.py``.
@@ -52,4 +51,4 @@ Upon completion Grotto Bot will work like any other Python file:
     py -3 bot.py
 
     # Linux/macOS
-    python3.8 bot.py
+    python3.9.4 bot.py
